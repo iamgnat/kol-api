@@ -201,9 +201,9 @@ sub changeName {
         return(0);
     }
     my $result = $1;
-    if ($result !~ m/FOO/) {
+    if ($result !~ m/All familiar names set successfully/) {
         $self->{'session'}->logResponse("Unable to change name: $result", $resp);
-        $@ = "Unable to get results: $result";
+        $@ = "Unable to change name: $result";
         return(0);
     }
     
