@@ -1,7 +1,6 @@
 # $Id$
 
 # TextUtils.pm
-#   David Whittle 12/07/2009
 #   Class for working with text.
 
 package KoL::TextUtils;

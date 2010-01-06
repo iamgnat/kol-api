@@ -1,7 +1,6 @@
 # $Id$
 
 # CommandLine.pm
-#   David Whittle 12/04/2009
 #   Class for processing command line arguments.
 
 package KoL::CommandLine;
