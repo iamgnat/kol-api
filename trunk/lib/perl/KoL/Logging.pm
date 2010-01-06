@@ -1,5 +1,7 @@
 # $Id$
 
+# Copyright KoLAPI (http://kol-api.googlecode.com)
+
 # Logging.pm
 #   Class for writing log messages.
 

@@ -1,5 +1,7 @@
 # $Id$
 
+# Copyright KoLAPI (http://kol-api.googlecode.com)
+
 # CommandLine.pm
 #   Class for processing command line arguments.
 

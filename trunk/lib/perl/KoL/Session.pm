@@ -1,5 +1,7 @@
 # $Id$
 
+# Copyright KoLAPI (http://kol-api.googlecode.com)
+
 # Session.pm
 #   Class for handling HTTP requests to KoL in the context of a session.
 

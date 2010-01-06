@@ -1,6 +1,9 @@
 # $Id$
-#
-# Utility functions for reading and writing files.
+
+# Copyright KoLAPI (http://kol-api.googlecode.com)
+
+# FileUtils
+#   Utility functions for reading and writing files.
 
 package KoL::FileUtils;
 

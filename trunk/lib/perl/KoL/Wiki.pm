@@ -1,5 +1,7 @@
 # $Id$
 
+# Copyright KoLAPI (http://kol-api.googlecode.com)
+
 # Wiki.pm
 #   Class for reading Wiki pages.
 

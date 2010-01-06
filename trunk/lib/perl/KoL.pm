@@ -1,5 +1,7 @@
 # $Id$
 
+# Copyright KoLAPI (http://kol-api.googlecode.com)
+
 # KoL.pm
 #   Base class that should contain any general config info or functionality.
 
