@@ -1,0 +1,524 @@
+#!/usr/bin/perl -I../lib/perl -w
+
+# $Id$
+
+use strict;
+use KoL;
+use KoL::CommandLine;
+use KoL::FileUtils;
+use KoL::Logging;
+use KoL::TextUtils;
+use KoL::Session;
+use KoL::Character;
+use KoL::Familiars;
+use KoL::Inventory;
+use KoL::Wiki;
+use Data::Dumper;
+
+my $cli = KoL::CommandLine->new();
+my $log = KoL::Logging->new();
+
+$cli->addOption(
+    'name'          => 'kol',
+    'short-name'    => 'k',
+    'type'          => 'boolean',
+    'default'       => 0,
+    'description'   => 'Test KoL.'
+);
+$cli->addOption(
+    'name'          => 'logging',
+    'short-name'    => 'l',
+    'type'          => 'boolean',
+    'default'       => 0,
+    'description'   => 'Test KoL::Logging.'
+);
+$cli->addOption(
+    'name'          => 'command-line',
+    'short-name'    => 'c',
+    'type'          => 'boolean',
+    'default'       => 0,
+    'description'   => 'Test KoL::CommandLine.'
+);
+$cli->addOption(
+    'name'          => 'text-utils',
+    'short-name'    => 't',
+    'type'          => 'boolean',
+    'default'       => 0,
+    'description'   => 'Test KoL::TextUtils.'
+);
+$cli->addOption(
+    'name'          => 'file-utils',
+    'short-name'    => 'f',
+    'type'          => 'boolean',
+    'default'       => 0,
+    'description'   => 'Test KoL::FileUtils.'
+);
+$cli->addOption(
+    'name'          => 'session',
+    'short-name'    => 's',
+    'type'          => 'boolean',
+    'default'       => 0,
+    'description'   => 'Test KoL::Session.'
+);
+$cli->addOption(
+    'name'          => 'character',
+    'short-name'    => 'C',
+    'type'          => 'boolean',
+    'default'       => 0,
+    'description'   => 'Test KoL::Character.'
+);
+$cli->addOption(
+    'name'          => 'familiars',
+    'short-name'    => 'F',
+    'type'          => 'boolean',
+    'default'       => 0,
+    'description'   => 'Test KoL::Familiars.'
+);
+$cli->addOption(
+    'name'          => 'inventory',
+    'short-name'    => 'i',
+    'type'          => 'boolean',
+    'default'       => 0,
+    'description'   => 'Test KoL::Inventory.'
+);
+$cli->addOption(
+    'name'          => 'wiki',
+    'short-name'    => 'w',
+    'type'          => 'boolean',
+    'default'       => 0,
+    'description'   => 'Test KoL::Wiki.'
+);
+$cli->addOption(
+    'name'          => 'test-all',
+    'short-name'    => 'a',
+    'type'          => 'boolean',
+    'default'       => 0,
+    'description'   => 'Run all tests..'
+);
+$cli->process();
+
+my $mail = promptUser("Enter your email address:", 'string');
+my $user = promptUser("Enter a KoL user name:", 'string');
+
+testKoL() if ($cli->getValue('kol') || $cli->getValue('test-all'));
+testLogging() if ($cli->getValue('logging') || $cli->getValue('test-all'));
+testCommandLine() if ($cli->getValue('command-line') || $cli->getValue('test-all'));
+testTextUtils() if ($cli->getValue('text-utils') || $cli->getValue('test-all'));
+testFileUtils() if ($cli->getValue('file-utils') || $cli->getValue('test-all'));
+testSession() if ($cli->getValue('session') || $cli->getValue('test-all'));
+testCharacter() if ($cli->getValue('character') || $cli->getValue('test-all'));
+testFamiliars() if ($cli->getValue('familiars') || $cli->getValue('test-all'));
+testInventory() if ($cli->getValue('inventory') || $cli->getValue('test-all'));
+testWiki() if ($cli->getValue('wiki') || $cli->getValue('test-all'));
+
+$log->msg("Testing complete.");
+
+exit(0);
+
+sub testKoL {
+    $log->msg("Testing KoL");
+    
+    $log->msg("Called from: " . calledFrom());
+    $log->msg("You supplied: " . promptUser('Please enter a number: ', 'number'));
+    $log->msg("You supplied: " . promptUser('Please enter a boolean: ', 'boolean'));
+    $log->msg("You supplied: " . promptUser('Please enter a string: ', 'string'));
+    $log->msg("You supplied: " . promptUser('Please press enter: ', 'string', 'The default value'));
+    my $ans1 = promptUser('Please enter a secret string: ', 'password');
+    my $ans2 = promptUser('Please enter the same secret string: ', 'password');
+    if ($ans1 ne $ans2) {
+        $log->msg("Your secret strings did not match!");
+    } else {
+        $log->msg("Your secret strings matched.");
+    }
+}
+
+sub testLogging {
+    $log->msg("Testing KoL::Logging");
+    
+    $log->msg("Logging object:");
+    print Dumper($log);
+    
+    my $debug = $log->debugging();
+    $log->setDebug(0);
+    
+    my $tmp = "This message is to test line wrapping.";
+    while (length($tmp) < 1000) {$tmp .= " word";}
+    $log->msg($tmp);
+    
+    $log->error("This is an error message.");
+    $log->debug("This is a debug message that we don't see.");
+    $log->setDebug(1);
+    $log->debug("This is a debug message that we do see.");
+    
+    $log->msg("Test setting a bogus file handle.");
+    $log->setDebugHandles([\*STDOUT, \*STDERR, 'foo']);
+    $log->debug("We should see this debug message twice (STDOUT & STDERR).");
+    
+    $log->setDebug($debug);
+    return;
+}
+
+sub testCommandLine {
+    $log->msg("Testing KoL::CommandLine");
+    
+    # We are creating a fresh instance so we can test all the functionality.
+    #   We pass the Logging object to keep the Logging CLI options from getting
+    #   added into the option list since we are not processing the real
+    #   command line at this point.
+    my $cli = KoL::CommandLine->new('log', $log);
+    my @argv = (
+        '-i', '-i', '-i', '--int', '4',                         # 7
+        '-I', '-I', '-I', '--multi-int', '4',                   # 1, 1, 1, 4
+        '-s', 'val 1', '--str', 'val 2', '-s', 'val 3',         # 'val 3'
+        '-S', 'val 1', '--multi-str', 'val 2', '-S', 'val 3',   # 'val 1', 'val 2', 'val 3'
+        '-b', '-b', '--no-bool',                                # 0
+        '-B', '-B', '--no-multi-bool',                          # 1, 1, 0
+        '-H',                                                   # 1
+    );
+    
+    my $callback = sub {
+        my $cli = shift;
+        my $opt = shift;
+        my $val = shift;
+        
+        my $msg = "    CommandLine callback called for '$opt' with ";
+        $msg .= "'$val'" if (ref($val) ne 'ARRAY');
+        $msg .= "'" . join(', ', @{$val}) . "'" if (ref($val) eq 'ARRAY');
+        $log->msg($msg);
+        return;
+    };
+    
+    $cli->addOption(
+        'name'          => 'int',
+        'short-name'    => 'i',
+        'type'          => 'number',
+        'multiple'      => 0,
+        'description'   => 'A number option.',
+        'callback'      => $callback,
+    );
+    $cli->addOption(
+        'name'          => 'multi-int',
+        'short-name'    => 'I',
+        'type'          => 'number',
+        'multiple'      => 1,
+        'description'   => 'A multi-number option.',
+        'callback'      => $callback,
+    );
+    $cli->addOption(
+        'name'          => 'str',
+        'short-name'    => 's',
+        'type'          => 'string',
+        'multiple'      => 0,
+        'allowed'       => ['val 1', 'val 2', 'val 3'],
+        'description'   => 'A string option.',
+        'callback'      => $callback,
+    );
+    $cli->addOption(
+        'name'          => 'multi-str',
+        'short-name'    => 'S',
+        'type'          => 'string',
+        'multiple'      => 1,
+        'allowed'       => ['val 1', 'val 2', 'val 3'],
+        'description'   => 'A multi-string option.',
+        'callback'      => $callback,
+    );
+    $cli->addOption(
+        'name'          => 'bool',
+        'short-name'    => 'b',
+        'type'          => 'boolean',
+        'multiple'      => 0,
+        'description'   => 'A boolean option.',
+        'callback'      => $callback,
+    );
+    $cli->addOption(
+        'name'          => 'multi-bool',
+        'short-name'    => 'B',
+        'type'          => 'boolean',
+        'multiple'      => 1,
+        'description'   => 'A multi-boolean option.',
+        'callback'      => $callback,
+    );
+    $cli->addOption(
+        'name'          => 'hidden',
+        'short-name'    => 'H',
+        'type'          => 'boolean',
+        'multiple'      => 0,
+        #'description'   => 'A hidden option.',
+        'callback'      => $callback,
+    );
+    $cli->addOption(
+        'name'          => 'default',
+        'short-name'    => 'D',
+        'type'          => 'string',
+        'multiple'      => 0,
+        'default'       => 'Default Value',
+        'description'   => 'A deafult option.',
+        'callback'      => $callback,
+    );
+    $cli->addOption(
+        'name'          => 'long-name-only',
+        'type'          => 'string',
+        'multiple'      => 0,
+        'default'       => 'Another Default Value',
+        'description'   => 'An option without a short name.',
+        'callback'      => $callback,
+    );
+    
+    $cli->printHelp("The help message with a preceeding message. Note: You " .
+                    "should not see the --hidden option.");
+    $log->msg("    Using argument list of: " . join(' ', @argv));
+    $cli->process(\@argv);
+    
+    my @tests = (
+        ['int', 7],
+        ['multi-int', [1, 1, 1, 4]],
+        ['str', 'val 3'],
+        ['multi-str', ['val 1', 'val 2', 'val 3']],
+        ['bool', 0],
+        ['multi-bool', [1, 1, 0]],
+        ['hidden', 1],
+        ['default', 'Default Value'],
+        ['long-name-only', 'Another Default Value'],
+    );
+    foreach my $test (@tests) {
+        my ($error);
+        my $opt = $test->[0];
+        my $val = $cli->getValue($opt);
+        my $test = $test->[1];
+        
+        $val = ref($val) eq 'ARRAY' ? join(', ', @{$val}) : $val;
+        $test = ref($test) eq 'ARRAY' ? join(', ', @{$test}) : $test;
+        if ($val eq $test) {
+            $log->msg("    Value for '$opt' passed validation.");
+        } else {
+            $log->error("    Value for '$opt' failed validation. Expected '$test', got '$val'.");
+        }
+    }
+    
+    return;
+}
+
+sub testTextUtils {
+    $log->msg("Testing KoL::TextUtils");
+    
+    my $text = KoL::TextUtils->new();
+    $text->setColumns(8);
+    
+    my $test = "test\n line 1\n line 2\n line 3";
+    my $str = $text->wrap('', ' ', 'test line 1 line 2 line 3');
+    
+    if ($str eq $test) {
+        $log->msg("    wrap() test succeeded.");
+    } else {
+        $log->error("    wrap() test failed:");
+        print STDERR "Results:\n$str\n";
+        print STDERR "Test:\n$test\n";
+    }
+}
+
+sub testFileUtils {
+    $log->msg("Testing KoL::FileUtils");
+    my $file = "/tmp/lib_test.$$.out";
+    
+    $log->msg("Testing writeFile() to '$file'");
+    if (!writeFile($file, "  Test writing to $file.\n")) {
+        $log->error("Unable to write to '$file': $@");
+        exit(1);
+    }
+    
+    $log->msg("Testing readFile() to scalar from '$file'.");
+    my $tmp = readFile($file);
+    print $tmp;
+
+    $log->msg("Testing writeFile() to handle");
+    open(TMP, '>', $file) or die "Unable to open '$file': $!\n";
+    if (!writeFile(\*TMP, "  Test writing to file handle.\n")) {
+        $log->error("Unable to write to file handle: $@");
+        exit(1);
+    }
+    close(TMP);
+    
+    $log->msg("Testing readFile() to array from '$file'.");
+    my @tmp = readFile($file);
+    print Dumper(@tmp);
+    
+    $log->msg("Testing appendFile() to '$file'.");
+    if (!appendFile($file, "  Testing append file to $file.\n")) {
+        $log->error("Unable to append to '$file': $@");
+        exit(1);
+    }
+    
+    $log->msg("Testing readFile() from file handle.");
+    open(TMP, $file);
+    $tmp = readFile(\*TMP);
+    close(TMP);
+    print $tmp;
+    
+    return;
+}
+
+sub testSession {
+    $log->msg("Testing KoL::Session");
+    my $sess = KoL::Session->new(
+        'agent'         => 'KoLAPI/lib_test',
+        'timeout'       => 60, # seconds
+        'email'         => $mail,
+    );
+    
+    if ($sess->loggedIn()) {
+        $log->error("Incorrectly reporting that we are already logged in...");
+        exit(1);
+    }
+    
+    # Test login
+    if (!$sess->login($user)) {
+        $log->error("Unable to login as '$user': $@");
+        exit(1);
+    }
+    
+    if (!$sess->loggedIn()) {
+        $log->error("Incorrectly reporting that we are not logged in...");
+        exit(1);
+    }
+    
+    # Test logout
+    if (!$sess->logout()) {
+        $log->error("Unable to logout '$user': $@");
+        exit(1);
+    }
+    
+    if ($sess->loggedIn()) {
+        $log->error("Incorrectly reporting that we are still logged in...");
+        exit(1);
+    }
+    
+    return;
+}
+
+sub testCharacter {
+    $log->msg("Testing KoL::Character");
+    my $sess = KoL::Session->new(
+        'email'         => $mail,
+    );
+    my $char = KoL::Character->new('session' => $sess);
+    
+    if ($char->update() || $@ !~ m/You must be logged in to use this method/) {
+        $log->error("Initial update request should have failed due to " .
+                    "not being logged in yet!");
+        $log->error("    $@");
+        exit(1);
+    }
+    
+    if (!$sess->login($user)) {
+        $log->error("Unable to login as '$user': $@");
+        exit(1);
+    }
+    
+    if (!$char->update()) {
+        $log->error("Unable to update character info: $@");
+        $sess->logout();
+        exit(1);
+    }
+    print Dumper($char->{'player'});
+    print Dumper($char->{'character'});
+    print Dumper($char->{'skills'});
+    print Dumper($char->{'effects'});
+    
+    if (!$sess->logout()) {
+        $log->error("Unable to logout '$user': $@");
+        exit(1);
+    }
+    
+    return;
+}
+
+sub testFamiliars {
+    $log->msg("Testing KoL::Familiars");
+    my $sess = KoL::Session->new(
+        'email'         => $mail,
+    );
+    my $fam = KoL::Familiars->new('session' => $sess);
+    
+    if ($fam->update() || $@ !~ m/You must be logged in to use this method/) {
+        $log->error("Initial update request should have failed due to " .
+                    "not being logged in yet!");
+        $log->error("    $@");
+        exit(1);
+    }
+    
+    if (!$sess->login($user)) {
+        $log->error("Unable to login as '$user': $@");
+        exit(1);
+    }
+    
+    if (!$fam->update()) {
+        $log->error("Unable to update familiar list: $@");
+        $sess->logout();
+        exit(1);
+    }
+    
+    #print Dumper($fam->{'current'});
+    #print Dumper($fam->{'familiars'});
+    my $name = $fam->{'current'}{'name'};
+    my $id = $fam->{'current'}{'id'};
+    if (!$fam->changeName($id, "$name changed by KoLAPI")) {
+        $log->error("Unable to change familiar name: $@");
+        $sess->logout();
+        exit(1);
+    }
+    if (!$fam->changeName($id, $name)) {
+        $log->error("Unable to change familiar name back: $@");
+        $sess->logout();
+        exit(1);
+    }
+    
+    if (!$sess->logout()) {
+        $log->error("Unable to logout '$user': $@");
+        exit(1);
+    }
+    
+    return;
+}
+
+sub testInventory {
+    $log->msg("Testing KoL::Inventory");
+    my $sess = KoL::Session->new(
+        'email'         => $mail,
+    );
+    my $inv = KoL::Inventory->new('session' => $sess);
+    
+    if (!$sess->login($user)) {
+        $log->error("Unable to login as '$user': $@");
+        exit(1);
+    }
+    
+    my $item = $inv->itemInfo(802361695);
+    if (!$item) {
+        $log->error("Unable to retrieve info for 3740: $@");
+        $sess->logout();
+        exit(1);
+    }
+    print Dumper($item);
+    
+    if (!$sess->logout()) {
+        $log->error("Unable to logout '$user': $@");
+        exit(1);
+    }
+    
+    return;
+}
+
+sub testWiki {
+    $log->msg("Testing KoL::Wiki");
+    my $wiki = KoL::Wiki->new(
+        'email'         => $mail,
+    );
+    
+    $log->msg("hot wad (item):");
+    print Dumper($wiki->getPage("hot wad"));
+    
+    $log->msg("hot blooded (effect):");
+    print Dumper($wiki->getPage("Hot Blooded"));
+    
+    return;
+}
