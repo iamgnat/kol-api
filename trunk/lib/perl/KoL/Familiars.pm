@@ -3,11 +3,6 @@
 # Familiars.pm
 #   Class for familiar information
 
-# $Id$
-
-# Familiars.pm
-#   Class for handling familiars.
-
 package KoL::Familiars;
 
 use strict;

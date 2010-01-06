@@ -1,7 +1,6 @@
 # $Id$
 
 # Logging.pm
-#   David Whittle 12/03/2009
 #   Class for writing log messages.
 
 package KoL::Logging;
