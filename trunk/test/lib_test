@@ -447,6 +447,7 @@ sub testFamiliars {
         $log->error("    $@");
         exit(1);
     }
+    $log->msg("Update prior to login properly failed.");
     
     if (!$sess->login($user)) {
         $log->error("Unable to login as '$user': $@");
@@ -458,20 +459,50 @@ sub testFamiliars {
         $sess->logout();
         exit(1);
     }
+    $log->msg("Update after to login succeeded.");
     
-    #print Dumper($fam->{'current'});
-    #print Dumper($fam->{'familiars'});
+    # Hack until a better way is available.
     my $name = $fam->{'current'}{'name'};
     my $id = $fam->{'current'}{'id'};
+    
     if (!$fam->changeName($id, "$name changed by KoLAPI")) {
         $log->error("Unable to change familiar name: $@");
         $sess->logout();
         exit(1);
     }
+    $log->msg("Name changed.");
+    
     if (!$fam->changeName($id, $name)) {
         $log->error("Unable to change familiar name back: $@");
         $sess->logout();
         exit(1);
+    }
+    $log->msg("Name changed back.");
+    
+    if (!$fam->unequip($id)) {
+        $log->error("Unable to unequip familiar: $@");
+        $sess->logout();
+        exit(1);
+    }
+    $log->msg("Current familiar unequiped.");
+    
+    my $avail = $fam->availableEquipment();
+    if (!$avail) {
+        $log->error("Unable to get list of available equipment: $@");
+        $sess->logout();
+        exit(1);
+    }
+    $log->msg("Available equipment retrieved.");
+    
+    if (@{$avail} == 0) {
+        $log->msg("No available equipment to equip.");
+    } else {
+        if (!$fam->equip($id, $avail->[0])) {
+            $log->error("Unable to equip item: $@");
+            $sess->logout();
+            exit(1);
+        }
+        $log->msg("Current familiar successfully equiped.");
     }
     
     if (!$sess->logout()) {

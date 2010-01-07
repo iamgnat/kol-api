@@ -107,8 +107,9 @@ sub update {
     # Extra equipment
     if ($content =~ m/<select name=whichitem>(.+?)<\/select>/s) {
         my $opts = $1;
-        while ($opts =~ m/value=\d+>(.+?)</gs) {
-            my $name = $1;
+        while ($opts =~ m/value=(\d+)>(.+?)</gs) {
+            my $eid = $1;
+            my $name = $2;
             my $count = 1;
             
             next if ($name =~ m/select an item/);
@@ -121,6 +122,7 @@ sub update {
             
             if (exists($equipment->{$name})) {
                 $equipment->{$name}{'count'} += $count;
+                $equipment->{$name}{'feid'} = $eid;
             } else {
                 my $info = $wiki->getPage($name);
                 if (!$info) {
@@ -134,6 +136,7 @@ sub update {
                 }
                 $equip->{'count'} = $count;
                 $equip->{'usedby'} = [];
+                $equip->{'feid'} = $eid;
                 $equipment->{$name} = $equip;
             }
         }
@@ -181,6 +184,20 @@ sub update {
     return(1);
 }
 
+sub availableEquipment {
+    my $self = shift;
+    
+    return(undef) if ($self->dirty() && !$self->update());
+    
+    my (@equip);
+    foreach my $eq (keys(%{$self->{'equipment'}})) {
+        next if (!exists($self->{'equipment'}{$eq}{'feid'}));
+        push(@equip, $self->{'equipment'}{$eq});
+    }
+    
+    return(\@equip);
+}
+
 sub changeName {
     my $self = shift;
     my $fid = shift;
@@ -206,7 +223,7 @@ sub changeName {
     my $resp = $self->{'session'}->post('familiarnames.php', {
         'action'    => 'Doodit',
         "fam$fid"   => $name,
-        'pwd'       => $self->{'session'}{'pwdhash'},
+        'pwd'       => $self->{'session'}->pwdhash(),
     });
     return(0) if (!$resp);
     
@@ -223,6 +240,102 @@ sub changeName {
     if ($result !~ m/All familiar names set successfully/) {
         $self->{'session'}->logResponse("Unable to change name: $result", $resp);
         $@ = "Unable to change name: $result";
+        return(0);
+    }
+    
+    return(1);
+}
+
+sub unequip {
+    my $self = shift;
+    my $fid = shift;
+    
+    if (!$self->{'session'}->loggedIn()) {
+        $@ = "You must be logged in to use this method.";
+        return(0);
+    }
+    
+    if ($fid !~ m/^\d+$/) {
+        $@ = "'$fid' is an invalid Familiar ID.";
+        return(0);
+    }
+    
+    return(0) if ($self->dirty() && !$self->update());
+    
+    my $page = 'familiar.php';
+    my $form = {
+        'pwd'       => $self->{'session'}->pwdhash(),
+        'action'    => 'unequip',
+    };
+    
+    if ($self->{'current'}{'id'} != $fid) {
+        $form->{'famid'} = $fid;
+    } else {
+        $page = 'inv_equip.php';
+        $form->{'type'} = 'familiarequip';
+        $form->{'terrarium'} = 1;
+    }
+    my $resp = $self->{'session'}->get($page, $form);
+    
+    return(0) if (!$resp);
+    
+    # Make it dirty now just incase the change really worked by we
+    #   don't know it for some reason.
+    $self->{'kol'}->makeDirty();
+    
+    if ($resp->content() =~ m/You either don't have a familiar of that type/) {
+        $self->{'log'}->debug("No familiar or no equipment on it.");
+        return(1);
+    }
+    
+    if ($resp->content() !~ m/Item unequipped/) {
+        $self->{'session'}->logResponse("Unable to unequip item", $resp);
+        $@ = "Unable to unequip item";
+        return(0);
+    }
+    
+    return(1);
+}
+
+sub equip {
+    my $self = shift;
+    my $fid = shift;
+    my $item = shift;
+    
+    if (!$self->{'session'}->loggedIn()) {
+        $@ = "You must be logged in to use this method.";
+        return(0);
+    }
+    
+    return(0) if ($self->dirty() && !$self->update());
+    
+    if ($fid !~ m/^\d+$/) {
+        $@ = "'$fid' is an invalid Familiar ID.";
+        return(0);
+    }
+    if (!exists($item->{'feid'})) {
+        $@ = "Item is aready in use or not familiar equipment.";
+        return(0);
+    }
+    
+    # If it's current, it doesn't seem to use it's real id.
+    $fid = -1 if ($self->{'current'}{'id'} == $fid);
+    
+    my $resp = $self->{'session'}->post('familiar.php', {
+        'action'    => 'equip',
+        'whichfam'  => $fid,
+        'whichitem' => $item->{'feid'},
+        'pwd'       => $self->{'session'}->pwdhash(),
+    });
+    return(0) if (!$resp);
+    
+    # Make it dirty now just incase the change really worked by we
+    #   don't know it for some reason.
+    $self->{'kol'}->makeDirty();
+    
+    if ($resp->content() !~ m/equips an item/) {
+        $self->{'session'}->logResponse("Unable to equip item", $resp);
+        $@ = "Unable to equip item!";
         return(0);
     }
     
