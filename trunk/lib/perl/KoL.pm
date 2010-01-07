@@ -36,6 +36,7 @@ sub new {
                 #'www6.kingdomofloathing.com',
                 'www7.kingdomofloathing.com',
             ],
+            'dirty'     => time(),
         };
         bless($self, $class);
         $_singleton = $self;
@@ -54,6 +55,19 @@ sub hosts {
     my $self = shift || KoL->new();
     
     return($self->{'hosts'});
+}
+
+sub dirty {
+    my $self = shift || KoL->new();
+    
+    return($self->{'dirty'});
+}
+
+sub makeDirty {
+    my $self = shift || KoL->new();
+    
+    $self->{'dirty'} = time();
+    return;
 }
 
 sub calledFrom {

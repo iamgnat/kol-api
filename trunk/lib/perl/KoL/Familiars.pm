@@ -27,17 +27,25 @@ sub new {
     }
     
     my $self = {
+        'kol'       => $kol,
         'session'   => $args{'session'},
         'inventory' => $args{'inventory'} || undef,
         'log'       => KoL::Logging->new(),
         'current'   => undef,
         'familiars' => [],
         'equipment' => {},
+        'dirty'     => 0
     };
     
     bless($self, $class);
     
     return($self);
+}
+
+sub dirty {
+    my $self = shift;
+    
+    return($self->{'kol'}->dirty() > $self->{'dirty'});
 }
 
 sub update {
@@ -47,6 +55,8 @@ sub update {
         $@ = "You must be logged in to use this method.";
         return(0);
     }
+    
+    return(1) if (!$self->dirty());
     
     my ($resp);
     $self->{'log'}->msg("Updating familiar info.", 10);
@@ -162,6 +172,9 @@ sub update {
         push(@{$familiars}, $fam);
     }
     
+    # Mark the update time so we know when we need to update again.
+    $self->{'dirty'} = time();
+    
     $self->{'current'} = $current;
     $self->{'familiars'} = $familiars;
     $self->{'equipment'} = $equipment;
@@ -196,6 +209,10 @@ sub changeName {
         'pwd'       => $self->{'session'}{'pwdhash'},
     });
     return(0) if (!$resp);
+    
+    # Make it dirty now just incase the change really worked by we
+    #   don't know it for some reason.
+    $self->{'kol'}->makeDirty();
     
     if ($resp->content() !~ m/Results:.*?<table><tr><td>(.+?)</s) {
         $self->{'session'}->logResponse("Unable to get results", $resp);

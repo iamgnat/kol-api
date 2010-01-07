@@ -35,6 +35,7 @@ sub new {
     }
     
     my $self = {
+        'kol'           => $kol,
         'agent'         => $args{'agent'},
         'timeout'       => $args{'timeout'},
         'email'         => $args{'email'},
@@ -176,6 +177,8 @@ sub login {
     }
     $self->{'pwdhash'} = $1;
     
+    $self->{'kol'}->makeDirty();
+    
     return(1);
 }
 
@@ -189,6 +192,8 @@ sub logout {
         $@ = "Unable to logout '" . $self->{'user'} . "': $@";
         return(0);
     }
+    
+    $self->{'kol'}->makeDirty();
     
     my $user = $self->{'user'};
     $self->{'sessionid'} = undef;

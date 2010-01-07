@@ -25,17 +25,25 @@ sub new {
     }
     
     my $self = {
+        'kol'       => $kol,
         'session'   => $args{'session'},
         'log'       => KoL::Logging->new(),
         'player'    => {},
         'character' => {},
         'skills'    => {},
         'effects'   => {},
+        'dirty'     => 0,
     };
     
     bless($self, $class);
     
     return($self);
+}
+
+sub dirty {
+    my $self = shift;
+    
+    return($self->{'kol'}->dirty() > $self->{'dirty'});
 }
 
 sub update {
@@ -45,6 +53,8 @@ sub update {
         $@ = "You must be logged in to use this method.";
         return(0);
     }
+    
+    return(1) if (!$self->dirty());
     
     my ($resp);
     $self->{'log'}->msg("Updating character info.", 10);
@@ -307,10 +317,14 @@ sub update {
         };
     }
     
+    # Mark the update time so we know when we need to update again.
+    $self->{'dirty'} = time();
+    
     $self->{'character'} = $character;
     $self->{'player'} = $player;
     $self->{'skills'} = $skills;
     $self->{'effects'} = $effects;
+    
     return(1);
 }
 
