@@ -73,6 +73,24 @@ sub loggedIn {
     return(1);
 }
 
+sub sessionID {
+    my $self = shift;
+    
+    return($self->{'sessionid'});
+}
+
+sub pwdhash {
+    my $self = shift;
+    
+    return($self->{'pwdhash'});
+}
+
+sub user {
+    my $self = shift;
+    
+    return($self->{'user'});
+}
+
 sub login {
     my $self = shift;
     my $user = shift;
