@@ -27,13 +27,21 @@ sub new {
     }
     
     my $self = {
+        'kol'       => $kol,
         'session'   => $args{'session'},
         'log'       => KoL::Logging->new(),
+        'dirty'     => 0,
     };
     
     bless($self, $class);
     
     return($self);
+}
+
+sub dirty {
+    my $self = shift;
+    
+    return($self->{'kol'}->dirty() > $self->{'dirty'});
 }
 
 sub itemInfo {
