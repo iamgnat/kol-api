@@ -6,6 +6,17 @@ This is the main module for the [KoLAPI KoLAPI]. It's purpose is to hold configu
 
 The end user of [KoLAPI KoLAPI] should not need to directly use this module.
 
+  * [PerlKoL#exported Exported Functions]
+    * [PerlKoL#calledFrom calledFrom()]
+    * [PerlKoL#promptUser promptUser()]
+  * [PerlKoL#object Object]
+    * [PerlKoL#methods Methods]
+      * [PerlKoL#new new()]
+      * [PerlKoL#version version()]
+      * [PerlKoL#hosts hosts()]
+      * [PerlKoL#dirty dirty()]
+      * [PerlKoL#makeDirty makeDirty()]
+
 =Exported Functions=
 
 These functions are not directly connected to the [PerlKoL KoL] object.
