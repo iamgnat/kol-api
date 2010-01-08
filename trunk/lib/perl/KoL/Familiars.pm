@@ -50,15 +50,15 @@ sub dirty {
 
 sub update {
     my $self = shift;
+    my $resp = ref($_[0]) ne 'HTTP::Response' ? undef : shift;
     
     if (!$self->{'session'}->loggedIn()) {
         $@ = "You must be logged in to use this method.";
         return(0);
     }
     
-    return(1) if (!$self->dirty());
+    return(1) if (!$self->dirty() && !$resp);
     
-    my ($resp);
     $self->{'log'}->msg("Updating familiar info.", 10);
     my $wiki = KoL::Wiki->new('session' => $self->{'session'});
     my $inv = KoL::Inventory->new('session' => $self->{'session'});
@@ -70,7 +70,7 @@ sub update {
     my ($current);
     
     $self->{'log'}->msg("Processing familiar.php.", 15);
-    $resp = $self->{'session'}->get('familiar.php');
+    $resp = $self->{'session'}->get('familiar.php') if (!$resp);
     return (0) if (!$resp);
     
     my $content = $resp->content();
@@ -97,6 +97,7 @@ sub update {
             }
             $equip->{'count'} = 1;
             $equip->{'usedby'} = [$current];
+            $equip->{'locked'} = $content =~ m%itemimages/padlock.gif% ? 1 : 0;
             $current->{'equip'} = $equip;
             $equipment->{$equip->{'name'}} = $equip;
         }
@@ -137,6 +138,7 @@ sub update {
                 $equip->{'count'} = $count;
                 $equip->{'usedby'} = [];
                 $equip->{'feid'} = $eid;
+                $equip->{'locaked'} = 0;
                 $equipment->{$name} = $equip;
             }
         }
@@ -169,6 +171,8 @@ sub update {
             if (exists($equipment->{$equip->{'name'}})) {
                 $equipment->{$equip->{'name'}}{'count'}++;
                 push(@{$equipment->{$equip->{'name'}}{'usedby'}}, $fam);
+            } else {
+                $fam->{'equip'}{'locked'} = 0;
             }
         }
         
@@ -198,9 +202,27 @@ sub availableEquipment {
     return(\@equip);
 }
 
+sub currentFamiliar {
+    my $self = shift;
+    
+    $@ = "";
+    return(undef) if ($self->dirty() && !$self->update());
+    
+    return($self->{'current'});
+}
+
+sub allFamiliars {
+    my $self = shift;
+    
+    $@ = "";
+    return(undef) if ($self->dirty() && !$self->update());
+    
+    return($self->{'familiars'});
+}
+
 sub changeName {
     my $self = shift;
-    my $fid = shift;
+    my $fam = shift;
     my $name = shift;
     
     if (!$self->{'session'}->loggedIn()) {
@@ -208,16 +230,18 @@ sub changeName {
         return(0);
     }
     
-    if ($fid !~ m/^\d+$/) {
-        $@ = "'$fid' is an invalid Familiar ID.";
+    if (ref($fam) ne 'HASH' || !exists($fam->{'id'})) {
+        $@ = "Invalid Familiar reference.";
         return(0);
     }
+    
     if ($name =~ m/^\s*$/) {
         $@ = "Whitespace is not a valid name!";
         return(0);
     }
     
     # If it's current, it doesn't seem to use it's real id.
+    my $fid = $fam->{'id'};
     $fid = 0 if ($self->{'current'}{'id'} == $fid);
     
     my $resp = $self->{'session'}->post('familiarnames.php', {
@@ -248,15 +272,15 @@ sub changeName {
 
 sub unequip {
     my $self = shift;
-    my $fid = shift;
+    my $fam = shift;
     
     if (!$self->{'session'}->loggedIn()) {
         $@ = "You must be logged in to use this method.";
         return(0);
     }
     
-    if ($fid !~ m/^\d+$/) {
-        $@ = "'$fid' is an invalid Familiar ID.";
+    if (ref($fam) ne 'HASH' || !exists($fam->{'id'})) {
+        $@ = "Invalid Familiar reference.";
         return(0);
     }
     
@@ -268,6 +292,7 @@ sub unequip {
         'action'    => 'unequip',
     };
     
+    my $fid = $fam->{'id'};
     if ($self->{'current'}{'id'} != $fid) {
         $form->{'famid'} = $fid;
     } else {
@@ -283,7 +308,8 @@ sub unequip {
     #   don't know it for some reason.
     $self->{'kol'}->makeDirty();
     
-    if ($resp->content() =~ m/You either don't have a familiar of that type/) {
+    if ($resp->content() =~ m/You either don't have a familiar of that type/ ||
+        $resp->content() =~ m/You don't seem to have anything in that slot/) {
         $self->{'log'}->debug("No familiar or no equipment on it.");
         return(1);
     }
@@ -299,7 +325,7 @@ sub unequip {
 
 sub equip {
     my $self = shift;
-    my $fid = shift;
+    my $fam = shift;
     my $item = shift;
     
     if (!$self->{'session'}->loggedIn()) {
@@ -309,16 +335,18 @@ sub equip {
     
     return(0) if ($self->dirty() && !$self->update());
     
-    if ($fid !~ m/^\d+$/) {
-        $@ = "'$fid' is an invalid Familiar ID.";
+    if (ref($fam) ne 'HASH' || !exists($fam->{'id'})) {
+        $@ = "Invalid Familiar reference.";
         return(0);
     }
+    
     if (!exists($item->{'feid'})) {
         $@ = "Item is aready in use or not familiar equipment.";
         return(0);
     }
     
     # If it's current, it doesn't seem to use it's real id.
+    my $fid = $fam->{'id'};
     $fid = -1 if ($self->{'current'}{'id'} == $fid);
     
     my $resp = $self->{'session'}->post('familiar.php', {
@@ -333,6 +361,11 @@ sub equip {
     #   don't know it for some reason.
     $self->{'kol'}->makeDirty();
     
+    if ($resp->content() =~ m/Only a specific familiar type/) {
+        $@ = "Equipment invalid for this familiar.";
+        return(0);
+    }
+    
     if ($resp->content() !~ m/equips an item/) {
         $self->{'session'}->logResponse("Unable to equip item", $resp);
         $@ = "Unable to equip item!";
@@ -340,6 +373,64 @@ sub equip {
     }
     
     return(1);
+}
+
+sub unlock {
+    my $self = shift;
+    
+    return($self->lock(1, @_));
+}
+
+sub lock {
+    my $self = shift;
+    my $unlock = shift || 0;
+    
+    if (!$self->{'session'}->loggedIn()) {
+        $@ = "You must be logged in to use this method.";
+        return(0);
+    }
+    
+    return(0) if ($self->dirty() && !$self->update());
+    
+    # Can't lock what's not there
+    if (!$self->{'current'} || !$self->{'current'}{'equip'}) {
+        $@ = "No current familiar or it is not equiped.";
+        return(0);
+    }
+    
+    if ($unlock && !$self->{'current'}{'equip'}{'locked'}) {
+        $@ = "The current equipment is not locked.";
+        return(1); # We set the message in case they want some info, but we'll "succeed".
+    }
+
+    if (!$unlock && $self->{'current'}{'equip'}{'locked'}) {
+        $@ = "The current equipment is already locked.";
+        return(1); # We set the message in case they want some info, but we'll "succeed".
+    }
+    
+    my $resp = $self->{'session'}->get('familiar.php', {
+        'action'    => 'lockequip',
+        'pwd'       => $self->{'session'}->pwdhash(),
+    });
+    return(0) if (!$resp);
+    
+    # Make it dirty now just incase the change really worked by we
+    #   don't know it for some reason.
+    $self->{'kol'}->makeDirty();
+    
+    if ($resp->content() =~ m/equipped by one kind of familiar\. Strange, but true/) {
+        $@ = "You can not lock familiar specific equipment.";
+        return(0);
+    }
+    
+    if ($resp->content() !~ m/Familiar equipment [(un)]*locked/) {
+        $self->{'session'}->logResponse("Unable to (un)lock equipment:", $resp);
+        $@ = "Unable to (un)lock equipment!";
+        return(0);
+    }
+    
+    # Rebuild the familiar info based off the result.
+    return($self->update($resp));
 }
 
 1;
