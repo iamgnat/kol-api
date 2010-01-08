@@ -1,0 +1,11 @@
+#summary Start here!
+#labels Featured
+
+= KoLAPI =
+
+KoLAPI is a Object Oriented API for automating the gameplay (e.g. building a bot) of the [http://www.kingdomofloathing.com Kingdom of Loathing] game.
+
+The goal of KoLAPI is to provide a flexible interface for writing bots that gives the developer as much control and information as possible while hiding the mundane details from them (e.g. dealing with HTTP, parsing results, etc..).
+
+Support Languages:
+  * Perl
