@@ -461,48 +461,70 @@ sub testFamiliars {
     }
     $log->msg("Update after to login succeeded.");
     
-    # Hack until a better way is available.
-    my $name = $fam->{'current'}{'name'};
-    my $id = $fam->{'current'}{'id'};
-    
-    if (!$fam->changeName($id, "$name changed by KoLAPI")) {
-        $log->error("Unable to change familiar name: $@");
+    my $curr = $fam->currentFamiliar();
+    if (!$curr && $@ ne '') {
+        $log->error("Unable to get current familiar: $@");
         $sess->logout();
         exit(1);
     }
-    $log->msg("Name changed.");
+    $log->msg("You do not have a current familiar.") if (!$curr);
     
-    if (!$fam->changeName($id, $name)) {
-        $log->error("Unable to change familiar name back: $@");
+    my $fams = $fam->allFamiliars();
+    if (!$fams && $@ ne '') {
+        $log->error("Unable to retrieve list of familiars: $@");
         $sess->logout();
         exit(1);
     }
-    $log->msg("Name changed back.");
+    $log->msg("You have " . (0 + @{$fams}) . " familiars.");
     
-    if (!$fam->unequip($id)) {
-        $log->error("Unable to unequip familiar: $@");
-        $sess->logout();
-        exit(1);
-    }
-    $log->msg("Current familiar unequiped.");
-    
-    my $avail = $fam->availableEquipment();
-    if (!$avail) {
-        $log->error("Unable to get list of available equipment: $@");
-        $sess->logout();
-        exit(1);
-    }
-    $log->msg("Available equipment retrieved.");
-    
-    if (@{$avail} == 0) {
-        $log->msg("No available equipment to equip.");
+    if (!$curr) {
+        $log->msg("This test requires that you have a current " .
+                    "familiar, it is equiped, and after unequiping " .
+                    "it the first equipable item is lockable.");
     } else {
-        if (!$fam->equip($id, $avail->[0])) {
-            $log->error("Unable to equip item: $@");
+        if ($curr->{'name'} !~ m/changed by KoLAPI/ &&
+            !$fam->changeName($curr, $curr->{'name'} . " changed by KoLAPI")) {
+            $log->error("Unable to change familiar name: $@");
             $sess->logout();
             exit(1);
         }
-        $log->msg("Current familiar successfully equiped.");
+        $log->msg("Name changed.");
+        
+        if (!$fam->unequip($curr)) {
+            $log->error("Unable to unequip familiar: $@");
+            $sess->logout();
+            exit(1);
+        }
+        $log->msg("Current familiar unequiped.");
+        
+        if (!$fam->unequip($curr)) {
+            $log->error("Unable to unequip item: $@");
+            $sess->logout();
+            exit(1);
+        }
+        $log->msg("Current familiar successfully unequiped.");
+    
+        my $eq = $fam->availableEquipment();
+        if (!$eq && $@ ne '') {
+            $log->error("Unable to retrieve list of available equipment: $@");
+            $sess->logout();
+            exit(1);
+        }
+        $log->msg("You have " . (0 + @{$eq}) . " unused pieces of equipment.");
+        
+        if (!$fam->lock()) {
+            $log->error("Unable to lock familiar equipment: $@");
+            $sess->logout();
+            exit(1);
+        }
+        $log->msg("Equipment locked.");
+    
+        if (!$fam->unlock()) {
+            $log->error("Unable to unlock familiar equipment: $@");
+            $sess->logout();
+            exit(1);
+        }
+        $log->msg("Equipment unlocked.");
     }
     
     if (!$sess->logout()) {
