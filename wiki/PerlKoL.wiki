@@ -1,0 +1,40 @@
+#summary KoL.pm
+
+= Introduction =
+
+This is the main module for the [KoLAPI KoLAPI]. It's purpose is to hold configuration and status information that is general to the API in general.
+
+The end user of [KoLAPI KoLAPI] should not need to directly use this module.
+
+=Exported Functions=
+
+These functions are not directly connected to the [PerlKoL KoL] object.
+
+===calledFrom($levels)===
+This function generates a string representation of the calling function/method a number of levels back as specified by the _$levels_ value. The _$levels_ default value is 2 if not specified which is the caller of the function calling _calledFrom()_.
+
+*Example return value:*
+
+{{{main(main::testLogging)}}}
+
+===promptUser($prompt, $type, $default)===
+This function interacts with the user via the TTY interface. It prompts the user with the _$prompt_ value, then verifies the supplied value against the _$type_ specified. If the response does not match the type, it will re-prompt them. If they supply no value (e.g. press enter) and a _$default_ value is supplied, the _$default_ value is returned. If there is an error, it returns _undef_ and sets _$@_.
+
+*_$type_ values*:
+|| *value* || *regex* || *Notes* ||
+|| bool || `^[01YyTtNnFf]` || Boolean values ||
+|| boolean || || See bool ||
+|| int || `^-{0,1}\d+$` || Numeric (no decimals) values ||
+|| integer || || See int ||
+|| num || || See int ||
+|| number || || See int ||
+|| string || `.*` || String value (including empty string) ||
+|| password || `.*` || Same as string, except that it turns echo off on the TTY when getting the answer from the user. ||
+
+*Examples:*
+{{{
+print promptUser("Give me a int value:", 'int') . "\n";
+print promptUser("Give me a bool value:", 'bool', 0) . "\n";
+print promptUser("Give me a string value:", 'string', "you didn't give me a string") . "\n";
+print promptUser("Give me a password value:", 'password') . "\n";
+}}}
