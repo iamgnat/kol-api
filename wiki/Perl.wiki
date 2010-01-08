@@ -3,16 +3,16 @@
 The purpose of this page is simply a jumping off point for the API's Perl documentation.
 
 ===Modules===
-  * [Perl-KoL KoL]
-  * [Perl-KoL-Character KoL::Character]
-  * [Perl-KoL-CommandLine KoL::CommandLine]
-  * [Perl-KoL-Familiars KoL::Familiars]
-  * [Perl-KoL-FileUtils KoL::FileUtils]
-  * [Perl-KoL-Inventory KoL::Inventory]
-  * [Perl-KoL-Logging KoL::Logging]
-  * [Perl-KoL-Session KoL::Session]
-  * [Perl-KoL-TextUtils KoL::TextUtils]
-  * [Perl-KoL-Wiki KoL::Wiki]
+  * [PerlKoL KoL]
+  * [PerlKoL-Character KoL::Character]
+  * [PerlKoL-CommandLine KoL::CommandLine]
+  * [PerlKoL-Familiars KoL::Familiars]
+  * [PerlKoL-FileUtils KoL::FileUtils]
+  * [PerlKoL-Inventory KoL::Inventory]
+  * [PerlKoL-Logging KoL::Logging]
+  * [PerlKoL-Session KoL::Session]
+  * [PerlKoL-TextUtils KoL::TextUtils]
+  * [PerlKoL-Wiki KoL::Wiki]
 
 ===Other Files===
-  * [Perl-libtest libtest]
+  * [PerlLibtest libtest]
