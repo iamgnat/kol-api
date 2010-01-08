@@ -1,0 +1,3 @@
+#summary General overview of the Perl interface to KoLAPI.
+
+The purpose of this page is simply a jumping off point for the API's Perl documentation.
