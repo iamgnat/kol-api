@@ -25,7 +25,7 @@
     * [PerlKoLSession#sessionID() sessionID()]
     * [PerlKoLSession#pwdhash() pwdhash()]
     * [PerlKoLSession#user() user()]
-    * [PerlKoLSession#login($user,_$pass)]
+    * [PerlKoLSession#login($user,_$pass) login($user, $pass)]
     * [PerlKoLSession#logout() logout()]
     * [PerlKoLSession#get($uri,_$form) get($uri, $form)]
     * [PerlKoLSession#head($uri,_$form) head($uri, $form)]
