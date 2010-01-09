@@ -120,3 +120,5 @@ If there is an error, it prints an error message (using [PerlKoLLogging KoL::Log
 {{{
 $cli->process();
 }}}
+
+===help($msg)===
