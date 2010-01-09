@@ -31,6 +31,7 @@ sub new {
     
     if (exists($args{'log'})) {
         $self->{'log'} = $args{'log'};
+        $self->{'log'}->setupCLI($self);
     } else {
         $self->{'log'} = KoL::Logging->new(%args, 'cli', $self);
     }
