@@ -1,5 +1,5 @@
   * [PerlKoL KoL]
-    * [PerlKoL#calledFrom($levels) ]
+    * [PerlKoL#calledFrom($levels) calledFrom($levels)]
     * [PerlKoL#promptUser($msg,_$type,_$default) promptUser($msg,_$type,_$default)]
     * [PerlKoL#new() new()]
     * [PerlKoL#dirty() dirty()]
