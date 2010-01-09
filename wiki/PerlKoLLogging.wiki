@@ -5,7 +5,7 @@
 
 This module doesn't have anything to do with [http://www.kingdomofloathing.com KoL] itself. It is a generic object of logging utilities.
 
-As this is meant to be handle global logging functionality, this is a singleton object.
+As this is meant to handle global logging functionality, this is a singleton object.
 
 <wiki:toc max_depth="3" />
 
@@ -51,7 +51,7 @@ These methods allow you to change where log messages of the respective type (_de
 
 The _$handles_ argument can be one of two formats. It can be a single _GLOB_ reference or it can be an array reference of _GLOB_ references.
 
-The second form of the _$handles_ argument allows you to have a single call to write a log message write it to multiple places at once (e.g. STDOUT and a log file).
+The second form of the _$handles_ argument allows you to have a single call to write a log message to multiple places at once (e.g. STDOUT and a log file).
 
 The supplied handles overwrite any existing handles. If other files handles were previously opened (e.g. log files), you are responsible for closing them.
 
