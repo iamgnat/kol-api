@@ -10,7 +10,7 @@ This module doesn't have anything to do with [http://www.kingdomofloathing.com K
 =Exported Functions=
 
 ===readFile($file)===
-Reads an the file specified by _$file_ and returns it's contents.
+Reads the file specified by _$file_ and returns it's contents.
 
 If the function is called in scalar context, the result is the entire file as a string. If there is an error, _undef_ is returned.
 
@@ -60,7 +60,7 @@ if (!writeFile('/etc/passwd', $data)) {
 ===appendFile($file, $data)===
 A wrapper function to simplify appending data to a file into a single command.
 
-The _$file_ argument can take two forms. It may be a string containing the path and name of a file, or it can be a _GLOB_ reference of an existing file handle. In the former case, it will attempt to truncate the file if it already exists. If you pass a _GLOB_, it assumes that you already opened it the way you want and it is set to write in the desired location.
+The _$file_ argument can take two forms. It may be a string containing the path and name of a file, or it can be a _GLOB_ reference of an existing file handle. In the former case, it will attempt to open the file for appending. If you pass a _GLOB_, it assumes that you already opened it the way you want and it is set to write in the desired location.
 
 The _$data_ argument is simply a string that you want to be written to the file.
 
