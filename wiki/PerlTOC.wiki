@@ -1,4 +1,5 @@
   * [PerlKoL KoL]
+    * [PerlKoL#new() new()]
   * [PerlKoLCharacter KoL::Character]
   * [PerlKoLCommandLine KoL::CommandLine]
   * [PerlKoLFamiliars KoL::Familiars]
