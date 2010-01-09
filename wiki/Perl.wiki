@@ -1,4 +1,5 @@
 #summary General overview of the Perl interface to KoLAPI.
+#labels Featured
 #sidebar PerlTOC
 
 The purpose of this page is simply a jumping off point for the API's Perl documentation.
