@@ -1,18 +1,4 @@
 #summary General overview of the Perl interface to KoLAPI.
+#sidebar PerlTOC
 
 The purpose of this page is simply a jumping off point for the API's Perl documentation.
-
-===Modules===
-  * [PerlKoL KoL]
-  * [PerlKoLCharacter KoL::Character]
-  * [PerlKoLCommandLine KoL::CommandLine]
-  * [PerlKoLFamiliars KoL::Familiars]
-  * [PerlKoLFileUtils KoL::FileUtils]
-  * [PerlKoLInventory KoL::Inventory]
-  * [PerlKoLLogging KoL::Logging]
-  * [PerlKoLSession KoL::Session]
-  * [PerlKoLTextUtils KoL::TextUtils]
-  * [PerlKoLWiki KoL::Wiki]
-
-===Other Files===
-  * [PerlLibtest libtest]
