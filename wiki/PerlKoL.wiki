@@ -58,40 +58,6 @@ There are currently no arguments to this method.
 my $kol = KoL->new();
 }}}
 
-===version()===
-This method returns the version of the KoL API.
-
-The method can actually be called as a function as it will create and use the singleton instance if it is not called as a method.
-
-There are no arguments for this method.
-
-*Method Example:*
-{{{
-my $kolVer = $kol->version();
-}}}
-
-*Function Example:*
-{{{
-my $kolVer = KoL::version();
-}}}
-
-===hosts()===
-This method returns an array reference of the [http://www.kingdomofloathing.com KoL] servers that the KoL API is configured to use.
-
-The method can actually be called as a function as it will create and use the singleton instance if it is not called as a method.
-
-There are no arguments for this method.
-
-*Method Example:*
-{{{
-my $hosts = $kol->hosts();
-}}}
-
-*Function Example:*
-{{{
-my $hosts = KoL::hosts();
-}}}
-
 ===dirty()===
 The _dirty()_ and _makeDirty()_ methods provide a modules to notify each other that they should update any cached information as a change has been made.
 
@@ -117,6 +83,22 @@ if (KoL::dirty() > $myCachetime) {
 # ...
 }}}
 
+===hosts()===
+This method returns an array reference of the [http://www.kingdomofloathing.com KoL] servers that the KoL API is configured to use.
+
+The method can actually be called as a function as it will create and use the singleton instance if it is not called as a method.
+
+There are no arguments for this method.
+
+*Method Example:*
+{{{
+my $hosts = $kol->hosts();
+}}}
+
+*Function Example:*
+{{{
+my $hosts = KoL::hosts();
+}}}
 
 ===makeDirty()===
 The _dirty()_ and _makeDirty()_ methods provide a modules to notify each other that they should update any cached information as a change has been made.
@@ -139,4 +121,21 @@ $kol->makeDirty();
 # Perform some action to change character information (e.g. sell an item)
 $myCacheTime = time();
 KoL::makeDirty();
+}}}
+
+===version()===
+This method returns the version of the KoL API.
+
+The method can actually be called as a function as it will create and use the singleton instance if it is not called as a method.
+
+There are no arguments for this method.
+
+*Method Example:*
+{{{
+my $kolVer = $kol->version();
+}}}
+
+*Function Example:*
+{{{
+my $kolVer = KoL::version();
 }}}
