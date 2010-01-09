@@ -41,6 +41,15 @@ sub new {
         $self->{'text'} = KoL::TextUtils->new();
     }
     
+    # Add the help option.
+    $self->addOption(
+        'name'          => 'help',
+        'short-name'    => 'h',
+        'description'   => 'Print this help text.',
+        'type'          => 'boolean',
+        'default'       => 0,
+    );
+    
     return($self);
 }
 
