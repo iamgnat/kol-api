@@ -36,7 +36,7 @@ The _%info_ hash controls the information about your option. The supported keys 
 || allowed || No || An array reference of allowed values. ||
 || callback || No || A function to call after the arguments have been processed. See callback details below for more information. ||
 || default || No || A default value if the option is not given. ||
-|| description || No || Test to display if -h/--help is supplied or [PerlKoLCommandLine#help($msg)] is called. If this option is not supplied, information about the option will not show up in the help output. ||
+|| description || No || Test to display if -h/--help is supplied or [PerlKoLCommandLine#help($msg) help()] is called. If this option is not supplied, information about the option will not show up in the help output. ||
 || multiple || No || 1|0 Can this option be supplied more than once? See details of multiple option support below. ||
 || name || Yes || The name of the argument. The name may only contain alpha-numerics, dashes, and underscores. It must be at least 2 characters long and the first character must be an alpha-numeric. ||
 || required || No || 1|0 Is this option required? ||
