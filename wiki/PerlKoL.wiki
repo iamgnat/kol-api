@@ -7,29 +7,39 @@ This is the main module for the [KoLAPI KoLAPI]. It's purpose is to hold configu
 The end user of [KoLAPI KoLAPI] should not need to directly use this module.
 
   * *[PerlKoL#Exported_Functions Exported Functions]*
-    * [PerlKoL#calledFrom calledFrom()]
-    * [PerlKoL#promptUser promptUser()]
-  * *[PerlKoL#object Object]*
-    * *[PerlKoL#methods Methods]*
-      * [PerlKoL#new new()]
-      * [PerlKoL#version version()]
-      * [PerlKoL#hosts hosts()]
-      * [PerlKoL#dirty dirty()]
-      * [PerlKoL#makeDirty() makeDirty()]
+    * [PerlKoL#calledFrom calledFrom]
+    * [PerlKoL#promptUser promptUser]
+  * *[PerlKoL#Object Object]*
+    * *[PerlKoL#Methods Methods]*
+      * [PerlKoL#new new]
+      * [PerlKoL#version version]
+      * [PerlKoL#hosts hosts]
+      * [PerlKoL#dirty dirty]
+      * [PerlKoL#makeDirty makeDirty]
 
 =Exported Functions=
 
 These functions are not directly connected to the [PerlKoL KoL] object.
 
-===calledFrom($levels)===
+===calledFrom===
 This function generates a string representation of the calling function/method a number of levels back as specified by the _$levels_ value. The _$levels_ default value is 2 if not specified which is the caller of the function calling _calledFrom()_.
+
+*Arguments:*
+
+  * $levels - Number of levels back to read from the call stack. Default: 2
 
 *Example return value:*
 
 {{{main(main::testLogging)}}}
 
-===promptUser($prompt, $type, $default)===
+===promptUser===
 This function interacts with the user via the TTY interface. It prompts the user with the _$prompt_ value, then verifies the supplied value against the _$type_ specified. If the response does not match the type, it will re-prompt them. If they supply no value (e.g. press enter) and a _$default_ value is supplied, the _$default_ value is returned. If there is an error, it returns _undef_ and sets _$@_.
+
+*Arguments:*
+
+  * $msg - The message to prompt the user with.
+  * $type - The type of response to expect.
+  * $default - The value to return if they don't supply an answer. Default: undef
 
 *_$type_ values*:
 || *value* || *regex* || *Notes* ||
@@ -56,7 +66,7 @@ The [PerlKoL KoL object] is meant to be used by other modules and not directly b
 The [PerlKoL KoL object] is a singleton object so all calls will use the same instance. The reason for this is to facilitate communicating "system"-wide changes to all users of the object.
 
 ==Methods==
-===new()===
+===new===
 This is the constructor of the object. If the singleton instance has not been created, it creates it. Once created (or if it already exists), it returns the singleton instance reference.
 
 There are currently no arguments to this method.
@@ -66,7 +76,7 @@ There are currently no arguments to this method.
 my $kol = KoL->new();
 }}}
 
-===version()===
+===version===
 This method returns the version of the KoL API.
 
 The method can actually be called as a function as it will create and use the singleton instance if it is not called as a method.
@@ -83,7 +93,7 @@ my $kolVer = $kol->version();
 my $kolVer = KoL::version();
 }}}
 
-===hosts()===
+===hosts===
 This method returns an array reference of the [http://www.kingdomofloathing.com KoL] servers that the KoL API is configured to use.
 
 The method can actually be called as a function as it will create and use the singleton instance if it is not called as a method.
@@ -100,7 +110,7 @@ my $hosts = $kol->hosts();
 my $hosts = KoL::hosts();
 }}}
 
-===dirty()===
+===dirty===
 The _dirty()_ and _makeDirty()_ methods provide a modules to notify each other that they should update any cached information as a change has been made.
 
 The _dirty()_ method returns the last UTC time (e.g. _time()_) that the _makeDirty()_ was called. Modules can use this result against their own saved UTC time to know if their last cache was before or after a known change to the character/environment information.
@@ -126,7 +136,7 @@ if (KoL::dirty() > $myCachetime) {
 }}}
 
 
-===[#makeDirty makeDirty()]===
+===makeDirty===
 The _dirty()_ and _makeDirty()_ methods provide a modules to notify each other that they should update any cached information as a change has been made.
 
 The _makeDirty()_ method sets a value in the object to the current UTC seconds (e.g. _time()). This value is then returned by a call to _dirty()_. 
