@@ -116,7 +116,6 @@ sub login {
     
     # Get the hash key for hashing the password.
     #   Disable redirects so we can get the key.
-    $self->{'log'}->msg("Getting hash key.", 10);
     $resp = $self->get('login.php');
     return (0) if (!$resp);
     
