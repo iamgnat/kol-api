@@ -21,6 +21,7 @@ sub new {
     
     if (!defined($_singleton)) {
         my $self = {
+            'cli'       => undef,
             'text'      => KoL::TextUtils->new(),
             'handles'   => {
                 'debug' => [\*STDERR],
@@ -52,6 +53,10 @@ sub new {
 sub setupCLI {
     my $self = shift;
     my $cli = shift;
+    
+    return if ($self->{'cli'});
+    $self->{'cli'} = $cli;
+    
     $cli->addOption(
         'name'          => 'debug',
         'type'          => 'boolean',
