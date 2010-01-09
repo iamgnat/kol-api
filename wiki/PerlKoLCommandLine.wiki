@@ -121,4 +121,62 @@ If there is an error, it prints an error message (using [PerlKoLLogging KoL::Log
 $cli->process();
 }}}
 
-===help($msg)===
+===unclaimed($idx)===
+After calling the _process()_ method, you can call unclaimed to retrieve arguments that were not associated with an option. 
+
+If _$idx_ is not supplied or invalid, all the unclaimed options are returned as an array. If _$idx_ - 1 is a valid element in the unclaimed list, only that element is returned.
+
+*Example:*
+
+{{{
+my @unc = $cli->unclaimed();
+foreach my $unc (@unc) {
+    # Do something with it...
+}
+}}}
+
+===ignored()===
+This method returns a list of arguments that were supplied after a double-dash (e.g. '--') which tells _process()_ to stop processing the argument list. This functionality is useful if your program has sub-commands where you need to process general options first and then further option based on which sub-command it is.
+
+The result of this method is an array of the remaining arguments after the double-dash.
+
+*Example:*
+
+{{{
+$cli->process();
+if ($cli->unclaimed(1) eq 'sub-command') {
+    my @subArgs = $cli->ignored();
+    my $subCli = KoL::CommandLine->new();
+    $subCli->addOption(...);
+    $subCli->addOption(...);
+    $subCli->process(\@subArgs);
+    #...
+}
+}}}
+
+===getValue($name)===
+Returns the value supplied for the _$name_ option or undef.
+
+*Example:*
+
+{{{
+my $myopt = $cli->getValue('myopt');
+print "'$myopt' was supplied for --myopt.\n" if (defined($myopt));
+}}}
+
+===printHelp($msg)===
+This method prints out formated help text of the options to STDERR. The help text includes the description, the type of option, it's default value (if any), if it is required, and the list of allowed values (if any).
+
+If given, the _$msg_ string will be printed prior to the help text in the format "ERROR: _$msg_".
+
+If an option does was not supplied a _description_ element, the it will not show up in the help text.
+
+*Example:*
+
+{{{
+my $myopt = $cli->getValue('myopt');
+if ($myopt ne 'what i want') {
+    $cli->printHelp("The --myopt value is incorrect.");
+    exit(1);
+}
+}}}
