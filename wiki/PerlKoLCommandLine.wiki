@@ -1,4 +1,4 @@
-#summary KoL::CommandLine.pm
+#summary KoL::CommandLine module
 #sidebar PerlTOC
 
 = Introduction =

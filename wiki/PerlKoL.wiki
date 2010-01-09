@@ -1,4 +1,4 @@
-#summary KoL.pm
+#summary KoL module
 #sidebar PerlTOC
 
 = Introduction =
