@@ -16,5 +16,6 @@
   * [PerlKoLSession KoL::Session]
   * [PerlKoLTextUtils KoL::TextUtils]
   * [PerlKoLWiki KoL::Wiki]
+
 *Other files*
   * [PerlLibtest libtest]
