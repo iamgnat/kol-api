@@ -1,0 +1,162 @@
+#summary KoL::Familiars module
+#sidebar PerlTOC
+
+= Introduction =
+
+This module is to work with a character's familiars.
+
+<wiki:toc max_depth="3" />
+
+==Hash Definition==
+The definition for a familiar hash reference is:
+
+|| *Key* || *Description* ||
+|| id || The ID of the familiar. ||
+|| name || The name of the familiar. ||
+|| weight || The current weight of the familiar. ||
+|| type || The type of familiar. ||
+|| exp || The current experience of the familiar. ||
+|| kills || The number of kills by the familiar. ||
+|| equip || The [PerlKoLEquipment KoL::Equipment] hash reference to the familiar's equipped item or _undef_ if no item is equipped. ||
+
+==Methods==
+===new(%args)===
+This is the constructor of the object and simply sets up the data storage.
+
+The [PerlKoLSession KoL::Session] instance for the character you are working with is required in the _%args_ hash using the 'session' key.
+
+If there is an error, _undef_ is returned and _$@_ is set.
+
+*Example:*
+{{{
+my $fam = KoL::Familiars->new('session' => $sess);
+}}}
+
+===update()===
+If no information is cached or the last time it was cached was before the [PerlKoL KoL->dirty()] time, this method requests 'familiar.php' and gathers information from it.
+
+The result is 1|0 based on success or failure. In the event of a failure, _$@_ is set to a meaningful value.
+
+*Example:*
+
+{{{
+$char->update();
+}}}
+
+===availableEquipment()===
+Returns an array reference of familiar equipment that is currently not being used by a familiar.
+
+In the event of an error, _undef_ is returned and _$@_ is set with an error message.
+
+*Example:*
+
+{{{
+my $equip = $fam->availableEquipment();
+if (!$equip) {
+    print "Unable to get available equipment: $@\n";
+    exit(1);
+}
+print "You have " . (0 + @{$equip}) . " unused familiar equipment items.\n";
+}}}
+
+===currentFamiliar()===
+Returns the hash reference for the current familiar in use.
+
+If no familiar is in use, _undef_ will be returned. An _undef_ result is also returned in the event of an error so you need to check _$@_ to see if it has a value to distinguish the two cases.
+
+*Example:*
+
+{{{
+my $curr = $fam->currentFamiliar();
+if ($@) {
+    print "Unable to retrieve current familiar: $@\n";
+    exit(1);
+}
+}}}
+
+===allFamiliars()===
+Returns an array reference of all the familiars that the character has.
+
+If the character has no familiars, an empty array reference is returned.
+
+In the event of an error, _undef_ is returned and _$@_ is set.
+
+*Example:*
+
+{{{
+my $fams = $fam->allFamiliars();
+if (!$fams) {
+    print "Unable to retrieve all familiars: $@\n";
+    exit(1);
+}
+}}}
+
+===changeName($fam, $name)===
+Changes the name of the supplied _$fam_ familiar to _$name_.
+
+_$fam_ is a familiar hash reference as returned by _currentFamiliar()_ or _allFamiliars()_.
+
+Returns 1 on success and 0 for an error. In the event of an error, _$@_ is set.
+
+*Example:*
+
+{{{
+if (!$fam->changeName($fams->[0], $fams->[0]{'name'} . " Now with more Lemon!")) {
+    print "Unable to change familiar name: $@\n";
+    exit(1);
+}
+}}}
+
+===unequip($fam)===
+If the familiar identified by _$fam_ currently has an item equipped, the item is unequipped.
+
+_$fam_ is a familiar hash reference as returned by _currentFamiliar()_ or _allFamiliars()_.
+
+Returns 0 on failure and sets _$@_ to an error message.
+
+*Example:*
+
+{{{
+if (!$fam->unequip($fams->[0])) {
+    print "Unable to unequip familiar: $@\n";
+    exit(1);
+}
+}}}
+
+===equip($fam, $item)===
+Attempts to equip the given _$item_ to the familiar identified by _$fam_.
+
+_$fam_ is a familiar hash reference as returned by _currentFamiliar()_ or _allFamiliars()_.
+
+_$item_ is a familiar equipment hash reference as returned by _availableEquipment()_.
+
+On error, 0 is returned and _$@_ is set to an error message.
+
+*Example:*
+
+{{{
+if (!$fam->equip($curr, $equip->[3])) {
+    print "Unable to equip familiar: $@\n";
+    exit(1);
+}
+}}}
+
+===lock()===
+===unlock()===
+Attempts to (un)lock the equipment equipped to the current familiar.
+
+Returns 0 and sets _$@_ in the event it is unable to do so.
+
+*Examples:*
+
+{{{
+if (!$fam->lock()) {
+    print "Unable to lock current equipment: $@\n";
+}
+}}}
+
+{{{
+if (!$fam->unlock()) {
+    print "Unable to unlock current equipment: $@\n";
+}
+}}}
