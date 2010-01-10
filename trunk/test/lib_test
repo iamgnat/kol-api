@@ -549,7 +549,7 @@ sub testInventory {
     
     my $item = $inv->itemInfo(802361695);
     if (!$item) {
-        $log->error("Unable to retrieve info for 3740: $@");
+        $log->error("Unable to retrieve info for 802361695: $@");
         $sess->logout();
         exit(1);
     }

@@ -25,7 +25,7 @@ sub new {
     # Get the terminal width if possible, otherwise it should be left at the default.
     if (!-t) {
         # Not a terminal
-        $self->{'columns'} = 80;
+        $self->{'columns'} = 0;
     } else {
         eval {
             require Term::ReadKey;
@@ -62,7 +62,7 @@ sub wrap {
     my $sPad = shift;
     my $text = shift;
     
-    return($text) if (!$self->{'textwrap'});
+    return($text) if (!$self->{'textwrap'} || $self->{'columns'} <= 0);
     
     $Text::Wrap::columns = $self->{'columns'};
     return(Text::Wrap::wrap($iPad, $sPad, $text));
