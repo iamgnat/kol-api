@@ -1,0 +1,86 @@
+#summary KoL::Familiar module
+#sidebar PerlTOC
+
+= Introduction =
+
+This module offers an object oriented view of a familiar. Instances of this object are intended to be created by [PerlKoLFamiliars#update() KoL::Familiars->update()] and as such the functionality to change familiar information will not be documented. 
+
+<wiki:toc max_depth="3" />
+
+==Methods==
+===exists()===
+Returns a 1 or 0 if the familiar still exists.
+
+As there does not appear to be a way to actively delete a familiar in the game, a 0 result really indicates some type of an error.
+
+If there is an error during processing, 0 is returned and _$@_ is set.
+
+*Example:*
+
+{{{
+my $res = $fam->exists();
+if (!$res && $@) {
+    print "Unable to check existence of familiar: $@\n";
+} elsif (!$res) {
+    print "No such familiar.\n";
+} else {
+    print "Familiar exists.\n";
+}
+}}}
+
+===id()===
+===name()===
+===weight()===
+===type()===
+===exp()===
+===kills()===
+These methods return the named stat of the familiar.
+
+In the event of an error, _undef_ is returned and _$@_ is set.
+
+*Examples:*
+
+{{{
+my $id = $fam->id();
+my $name = $fam->name();
+my $weight = $fam->weight();
+my $type = $fam->type();
+my $exp = $fam->exp();
+my $kills = $fam->kills();
+}}}
+
+===equip()===
+This method returns a [PerlKoLItem KoL::Item] reference to the familiar's equipped item.
+
+If the familiar does not currently have an item equipped or an error occurs, _undef_ is returned. In the event of an error, _$@_ is set to the error message.
+
+*Example:*
+
+{{{
+my $equip = $fam->equip();
+if (!$equip && $@) {
+    print "Unable to get familiar's equipment: $@\n";
+} elsif (!$equip) {
+    print "Familiar is not equipped.\n";
+} else {
+    print "Familiar is equipped.\n";
+}
+}}}
+
+===isCurrent()===
+Returns 1|0 if the familiar is the current familiar or not.
+
+If there is an error, 0 is returned and _$@_ is set.
+
+*Example:*
+
+{{{
+my $curr = $fam->isCurrent();
+if (!$curr && $@) {
+    print "Unable to check if familiar is the current one: $@\n";
+} elsif (!$curr) {
+    print "Not current.\n";
+} else {
+    print "Current.\n";
+}
+}}}
