@@ -89,6 +89,7 @@ sub update {
             'exp'       => $5,
             'kills'     => $6,
             'equip'     => undef,
+            'current'   => 1,
             'familiars' => $self,
         );
         
@@ -159,6 +160,7 @@ sub update {
             'exp'       => $5,
             'kills'     => $6,
             'equip'     => undef,
+            'current'   => 0,
             'familiars' => $self,
         );
         
