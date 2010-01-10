@@ -102,7 +102,7 @@ if (!$sess->logout()) {
 }}}
 
 ===_processResponse($resp)===
-This should never be called directly and a bot builder or module developer. This is a "private" method for [PerlKoLSession KoL::Session] that is used by the _get()_, _head()_, and _post()_ methods to process the HTTP response. It is only documented here to show the common error responses that it checks for and simplifies.
+This should never be called directly by a bot builder or module developer. This is a "private" method for [PerlKoLSession KoL::Session] that is used by the _get()_, _head()_, and _post()_ methods to process the HTTP response. It is only documented here to show the common error responses that it checks for and simplifies.
 
 As well as detecting standard errors, it also takes care of respecting [http://www.kingdomofloathing.com KoL's] request to use another server for future requests. If this occurs, it updates it's internal server name (set in _new()_).
 

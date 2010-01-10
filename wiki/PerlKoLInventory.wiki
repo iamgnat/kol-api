@@ -1,0 +1,49 @@
+#summary KoL::Inventory module
+#sidebar PerlTOC
+
+*WARNING:*
+
+This module is currently under active development. This means that:
+
+  # The API is not complete and functionality is being added and changed as it is developed.
+  # The documentation is likely not up to date with the code.
+
+Using any functionality of this module at this time is just silly and at your own risk.
+
+You've been warned!
+
+= Introduction =
+
+This module manages information about the character's inventory.
+
+<wiki:toc max_depth="3" />
+
+==Methods==
+===new(%args)===
+This is the constructor of the object and simply sets up the data storage.
+
+The [PerlKoLSession KoL::Session] instance for the character you are working with is required in the _%args_ hash using the 'session' key.
+
+If there is an error, _undef_ is returned and _$@_ is set.
+
+*Example:*
+{{{
+my $inv = KoL::Inventory->new('session' => $sess);
+}}}
+
+===itemInfo($id)===
+Returns a hash reference of information obtained from 'desc_item.php'. It also stores this information to reduce requests back to the [http://www.kingdomofloathing.com KoL] servers.
+
+The _$id_ value is the item description ID for the item you are looking up. In many cases you have to look your item up using [PerlKoLWiki#getPage($name) KoL::Wiki->getPage()] to find it in the [http://kol.coldfront.net/thekolwiki/index.php KoL Wiki].
+
+If there is an error the method returns _undef_ and sets _$@_.
+
+*Example:*
+
+{{{
+my $info = $inv->itemInfo(802361695);
+if (!$info) {
+    print "Unable to retrieve info for 802361695: $@\n";
+    exit(1);
+}
+}}}
