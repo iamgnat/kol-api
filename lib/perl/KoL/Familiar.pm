@@ -34,7 +34,8 @@ sub new {
         $self = $_familiarCache{$key}{'obj'};
     } else {
         $self = {
-            'key'   => $key,
+            'key'       => $key,
+            'familiars' => $args{'familiars'},
         };
         
         bless($self, $class);
@@ -63,7 +64,6 @@ sub update {
     $familiar->{'kills'} = $args{'kills'} if (exists($args{'kills'}));
     $familiar->{'equip'} = $args{'equip'} if (exists($args{'equip'}));
     $familiar->{'current'} = $args{'current'} if (exists($args{'current'}));
-    $familiar->{'familiars'} = $args{'familiars'} if (exists($args{'familiars'}));
     
     $_familiarCache{$self->{'key'}}{'obj'} = $self;
     $_familiarCache{$self->{'key'}}{'familiar'} = $familiar;
@@ -77,15 +77,19 @@ sub delete {
     delete($_familiarCache{$self->{'key'}}{'familiar'});
 }
 
-sub exists {return(exists($_familiarCache{$_[0]->{'key'}}{'familiar'}));}
+sub exists {
+    my $self = shift;
+    
+    return(0) if (!$self->{'familiars'}->update());
+    return(exists($_familiarCache{$self->{'key'}}{'familiar'}));
+}
 
 sub _getInfo {
     my $self = shift;
     my $key = shift;
     $@ = "";
     
-    return (undef) if (!exists($_familiarCache{$self->{'key'}}{'familiar'}));
-    return (undef) if (!$_familiarCache{$self->{'key'}}{'familiar'}{'familiars'}->update());
+    return (undef) if (!$self->exists());
     return($_familiarCache{$self->{'key'}}{'familiar'}{$key});
 }
 
