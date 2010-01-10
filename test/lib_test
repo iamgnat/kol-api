@@ -441,14 +441,6 @@ sub testFamiliars {
     );
     my $fam = KoL::Familiars->new('session' => $sess);
     
-    if ($fam->update() || $@ !~ m/You must be logged in to use this method/) {
-        $log->error("Initial update request should have failed due to " .
-                    "not being logged in yet!");
-        $log->error("    $@");
-        exit(1);
-    }
-    $log->msg("Update prior to login properly failed.");
-    
     if (!$sess->login($user)) {
         $log->error("Unable to login as '$user': $@");
         exit(1);
@@ -478,32 +470,32 @@ sub testFamiliars {
     $log->msg("You have " . (0 + @{$fams}) . " familiars.");
     
     if (!$curr) {
-        $log->msg("This test requires that you have a current " .
+        $log->msg("This series of tests require that you have a current " .
                     "familiar, it is equiped, and after unequiping " .
                     "it the first equipable item is lockable.");
     } else {
-        if ($curr->{'name'} !~ m/changed by KoLAPI/ &&
-            !$fam->changeName($curr, $curr->{'name'} . " changed by KoLAPI")) {
-            $log->error("Unable to change familiar name: $@");
-            $sess->logout();
-            exit(1);
+        if ($curr->name() =~ m/changed by KoLAPI/) {
+            $log->msg("Familiar name previously changed by this test script.");
+        } else {
+            if (!$fam->changeName($curr, $curr->name() . " changed by KoLAPI")) {
+                $log->error("Unable to change familiar name: $@");
+                $sess->logout();
+                exit(1);
+            }
+            $log->msg("Name changed.");
         }
-        $log->msg("Name changed.");
         
-        if (!$fam->unequip($curr)) {
-            $log->error("Unable to unequip familiar: $@");
-            $sess->logout();
-            exit(1);
+        if (!$curr->equip()) {
+            $log->msg("Your current familiar isn't equiped. Can't test unequip().");
+        } else {
+            if (!$fam->unequip($curr)) {
+                $log->error("Unable to unequip familiar: $@");
+                $sess->logout();
+                exit(1);
+            }
+            $log->msg("Current familiar unequiped.");
         }
-        $log->msg("Current familiar unequiped.");
         
-        if (!$fam->unequip($curr)) {
-            $log->error("Unable to unequip item: $@");
-            $sess->logout();
-            exit(1);
-        }
-        $log->msg("Current familiar successfully unequiped.");
-    
         my $eq = $fam->availableEquipment();
         if (!$eq && $@ ne '') {
             $log->error("Unable to retrieve list of available equipment: $@");
@@ -512,19 +504,31 @@ sub testFamiliars {
         }
         $log->msg("You have " . (0 + @{$eq}) . " unused pieces of equipment.");
         
-        if (!$fam->lock()) {
-            $log->error("Unable to lock familiar equipment: $@");
-            $sess->logout();
-            exit(1);
+        if (@{$eq} == 0) {
+            $log->msg("You do not have any available familiar equipment. " .
+                        "Unable to test equip(), lock(), and unlock()!");
+        } else {
+            if (!$fam->equip($curr, $eq->[0])) {
+                $log->error("Unable to equip item: $@");
+                $sess->logout();
+                exit(1);
+            }
+            $log->msg("Item equiped.");
+            
+            if (!$fam->lock()) {
+                $log->error("Unable to lock familiar equipment: $@");
+                $sess->logout();
+                exit(1);
+            }
+            $log->msg("Equipment locked.");
+            
+            if (!$fam->unlock()) {
+                $log->error("Unable to unlock familiar equipment: $@");
+                $sess->logout();
+                exit(1);
+            }
+            $log->msg("Equipment unlocked.");
         }
-        $log->msg("Equipment locked.");
-    
-        if (!$fam->unlock()) {
-            $log->error("Unable to unlock familiar equipment: $@");
-            $sess->logout();
-            exit(1);
-        }
-        $log->msg("Equipment unlocked.");
     }
     
     if (!$sess->logout()) {

@@ -12,6 +12,7 @@ use KoL;
 use KoL::Logging;
 use KoL::Session;
 use KoL::Inventory;
+use KoL::Familiar;
 use KoL::Wiki;
 
 sub new {
@@ -73,21 +74,23 @@ sub update {
     $resp = $self->{'session'}->get('familiar.php') if (!$resp);
     return (0) if (!$resp);
     
+    # Nuke any current familiars for them to be updated.
+    foreach my $fam (@{$self->{'familiars'}}) {$fam->delete();}
+    
     my $content = $resp->content();
     
     # Current familiar
     if ($content =~ m/Current Familiar:.+?fam\((.+?)\).*?<b>(.+?)<.+?br>(\d+)-\S+ (.+?) \(([\d,]+).+?, ([\d,]+) /s) {
-        $current = {
+        $current = KoL::Familiar->new(
             'id'        => $1,
             'name'      => $2,
             'weight'    => $3,
             'type'      => $4,
             'exp'       => $5,
             'kills'     => $6,
-            'equip'     => undef
-        };
-        $current->{'exp'} =~ s/,//g;
-        $current->{'kills'} =~ s/,//g;
+            'equip'     => undef,
+            'familiars' => $self,
+        );
         
         if ($content =~ m/>Equipment:.+?descitem\((\d+)\)/s) {
             my $equip = $inv->itemInfo($1);
@@ -98,8 +101,9 @@ sub update {
             $equip->{'count'} = 1;
             $equip->{'usedby'} = [$current];
             $equip->{'locked'} = $content =~ m%itemimages/padlock.gif% ? 1 : 0;
-            $current->{'equip'} = $equip;
             $equipment->{$equip->{'name'}} = $equip;
+            
+            $current->update('equip' => $equip);
         }
         
         push(@{$familiars}, $current);
@@ -147,15 +151,16 @@ sub update {
     # Familiars
     while ($content =~ m/<input .+? value=(\d+)>.*?<b>(.+?)<.+?(\d+)-\S+ (.+?) \(([\d,]+).+?([\d,]+)(.+?)<\/tr>/gs) {
         my $equip = $7;
-        my $fam = {
+        my $fam = KoL::Familiar->new(
             'id'        => $1,
             'name'      => $2,
             'weight'    => $3,
             'type'      => $4,
             'exp'       => $5,
             'kills'     => $6,
-            'equip'     => undef
-        };
+            'equip'     => undef,
+            'familiars' => $self,
+        );
         
         if ($equip !~ m/descitem\((.+?)\)/s) {
             undef($equip);
@@ -174,6 +179,8 @@ sub update {
             } else {
                 $fam->{'equip'}{'locked'} = 0;
             }
+            
+            $fam->update('equip' => $equip);
         }
         
         push(@{$familiars}, $fam);
@@ -230,7 +237,7 @@ sub changeName {
         return(0);
     }
     
-    if (ref($fam) ne 'HASH' || !exists($fam->{'id'})) {
+    if (ref($fam) ne 'KoL::Familiar') {
         $@ = "Invalid Familiar reference.";
         return(0);
     }
@@ -241,8 +248,8 @@ sub changeName {
     }
     
     # If it's current, it doesn't seem to use it's real id.
-    my $fid = $fam->{'id'};
-    $fid = 0 if ($self->{'current'}{'id'} == $fid);
+    my $fid = $fam->id();
+    $fid = 0 if ($self->{'current'}->id() == $fid);
     
     my $resp = $self->{'session'}->post('familiarnames.php', {
         'action'    => 'Doodit',
@@ -279,7 +286,7 @@ sub unequip {
         return(0);
     }
     
-    if (ref($fam) ne 'HASH' || !exists($fam->{'id'})) {
+    if (ref($fam) ne 'KoL::Familiar') {
         $@ = "Invalid Familiar reference.";
         return(0);
     }
@@ -292,8 +299,8 @@ sub unequip {
         'action'    => 'unequip',
     };
     
-    my $fid = $fam->{'id'};
-    if ($self->{'current'}{'id'} != $fid) {
+    my $fid = $fam->id();
+    if ($self->{'current'}->id() != $fid) {
         $form->{'famid'} = $fid;
     } else {
         $page = 'inv_equip.php';
@@ -335,7 +342,7 @@ sub equip {
     
     return(0) if ($self->dirty() && !$self->update());
     
-    if (ref($fam) ne 'HASH' || !exists($fam->{'id'})) {
+    if (ref($fam) ne 'KoL::Familiar') {
         $@ = "Invalid Familiar reference.";
         return(0);
     }
@@ -346,8 +353,8 @@ sub equip {
     }
     
     # If it's current, it doesn't seem to use it's real id.
-    my $fid = $fam->{'id'};
-    $fid = -1 if ($self->{'current'}{'id'} == $fid);
+    my $fid = $fam->id();
+    $fid = -1 if ($self->{'current'}->id() == $fid);
     
     my $resp = $self->{'session'}->post('familiar.php', {
         'action'    => 'equip',
@@ -393,17 +400,18 @@ sub lock {
     return(0) if ($self->dirty() && !$self->update());
     
     # Can't lock what's not there
-    if (!$self->{'current'} || !$self->{'current'}{'equip'}) {
+    if (!$self->{'current'} || !$self->{'current'}->equip()) {
         $@ = "No current familiar or it is not equiped.";
         return(0);
     }
     
-    if ($unlock && !$self->{'current'}{'equip'}{'locked'}) {
+    my $equip = $self->{'current'}->equip();
+    if ($unlock && !$equip->{'locked'}) {
         $@ = "The current equipment is not locked.";
         return(1); # We set the message in case they want some info, but we'll "succeed".
     }
 
-    if (!$unlock && $self->{'current'}{'equip'}{'locked'}) {
+    if (!$unlock && $equip->{'locked'}) {
         $@ = "The current equipment is already locked.";
         return(1); # We set the message in case they want some info, but we'll "succeed".
     }
