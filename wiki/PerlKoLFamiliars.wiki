@@ -18,18 +18,6 @@ This module is to work with a character's familiars.
 
 <wiki:toc max_depth="3" />
 
-==Hash Definition==
-The definition for a familiar hash reference is:
-
-|| *Key* || *Description* ||
-|| id || The ID of the familiar. ||
-|| name || The name of the familiar. ||
-|| weight || The current weight of the familiar. ||
-|| type || The type of familiar. ||
-|| exp || The current experience of the familiar. ||
-|| kills || The number of kills by the familiar. ||
-|| equip || The [PerlKoLEquipment KoL::Equipment] hash reference to the familiar's equipped item or _undef_ if no item is equipped. ||
-
 ==Methods==
 ===new(%args)===
 This is the constructor of the object and simply sets up the data storage.
@@ -71,7 +59,7 @@ print "You have " . (0 + @{$equip}) . " unused familiar equipment items.\n";
 }}}
 
 ===currentFamiliar()===
-Returns the hash reference for the current familiar in use.
+Returns the [PerlKoLFamiliar KoL::Familiar] instance for the current familiar in use.
 
 If no familiar is in use, _undef_ will be returned. An _undef_ result is also returned in the event of an error so you need to check _$@_ to see if it has a value to distinguish the two cases.
 
@@ -86,7 +74,7 @@ if ($@) {
 }}}
 
 ===allFamiliars()===
-Returns an array reference of all the familiars that the character has.
+Returns an array reference of [PerlKoLFamiliar KoL::Familiar] instances for all of the familiars that the character has.
 
 If the character has no familiars, an empty array reference is returned.
 
@@ -105,7 +93,7 @@ if (!$fams) {
 ===changeName($fam, $name)===
 Changes the name of the supplied _$fam_ familiar to _$name_.
 
-_$fam_ is a familiar hash reference as returned by _currentFamiliar()_ or _allFamiliars()_.
+_$fam_ is a [PerlKoLFamiliar KoL::Familiar] instance as returned by _currentFamiliar()_ or _allFamiliars()_.
 
 Returns 1 on success and 0 for an error. In the event of an error, _$@_ is set.
 
@@ -121,7 +109,7 @@ if (!$fam->changeName($fams->[0], $fams->[0]{'name'} . " Now with more Lemon!"))
 ===unequip($fam)===
 If the familiar identified by _$fam_ currently has an item equipped, the item is unequipped.
 
-_$fam_ is a familiar hash reference as returned by _currentFamiliar()_ or _allFamiliars()_.
+_$fam_ is a [PerlKoLFamiliar KoL::Familiar] instance as returned by _currentFamiliar()_ or _allFamiliars()_.
 
 Returns 0 on failure and sets _$@_ to an error message.
 
@@ -137,7 +125,7 @@ if (!$fam->unequip($fams->[0])) {
 ===equip($fam, $item)===
 Attempts to equip the given _$item_ to the familiar identified by _$fam_.
 
-_$fam_ is a familiar hash reference as returned by _currentFamiliar()_ or _allFamiliars()_.
+_$fam_ is a [PerlKoLFamiliar KoL::Familiar] instance as returned by _currentFamiliar()_ or _allFamiliars()_.
 
 _$item_ is a familiar equipment hash reference as returned by _availableEquipment()_.
 
