@@ -1,0 +1,58 @@
+#summary KoL::TextUtils module
+#sidebar PerlTOC
+
+= Introduction =
+
+This module doesn't have anything to do with [http://www.kingdomofloathing.com KoL] itself. It is a generic object of text manipulation utilities.
+
+<wiki:toc max_depth="3" />
+
+==Methods==
+===new()===
+This is the constructor of the object.
+
+It attempts to load the _Text::Wrap_ module if it is installed. If it is not, then it disables usage of that module.
+
+It also attempts to load _Term::ReadKey_ and determine the terminal width for purposes of wrapping text. If it is unable to determine the terminal width (_Term::ReadKey_ not installed or the session is not a terminal), it disables wrapping text.
+
+There are currently no arguments to this method.
+
+*Example:*
+{{{
+my $text = KoL::TextUtils->new();
+}}}
+
+===columns()===
+Returns the current number of columns being used for wrapping text. A result of 0 means that text will not be wrapped.
+
+*Example:*
+{{{
+my $cols = $text->columns();
+# ...
+}}}
+
+===setColumns($val)===
+Changes the value for _columns()_ to allow you to override the determined value. If _$val_ is 0, text wrapping will be disabled.
+
+*Example:*
+{{{
+$text->setColumns(80);
+}}}
+
+===wrap($iPad, $sPad, $text)===
+This method takes the _$text_ string and attempts to wrap it using _Text::Wrap::wrap_. If _new()_ was unable to load _Text::Wrap_ or _columns()_ is set to 0, then _$text_ is returned with no modification.
+
+The _$iPad_ is a string of characters you would like prepended to _$text_.
+
+_$sPad_ is a string of characters you would like appended after each new line that is inserted.
+
+For example if you wanted to format a long string into an English style paragraph, _$iPad_ could be four spaces ('    ') or a TAB ("\t") depending on your preference and _$sPad_ would be an empty string (''). If, instead, you were outputing something like a log message and wanted each wrapped line to be indented for readability, you might set _$iPad_ to an empty string ('') and _$sPad_ to some whitespace (e.g. '    ').
+
+See _Text::Wrap_ for more details on how the actual wrapping is performed.
+
+*Example:*
+
+{{{
+$text->setColumns(10);
+print $text->wrap('', '    ', "This is a string of text that should wrap at least once.\n");
+}}}

@@ -50,6 +50,10 @@
     * [PerlKoLSession#post($uri,_$form) post($uri, $form)]
     * [PerlKoLSession#logResponse($msg,_$resp,_$level) logResponse($msg, $resp, $level)]
   * [PerlKoLTextUtils KoL::TextUtils]
+    * [PerlKoLTextUtils#new() new()]
+    * [PerlKoLTextUtils#columns() columns()]
+    * [PerlKoLTextUtils#setColumns($val) setColumns($val)]
+    * [PerlKoLTextUtils#wrap($iPad,_$sPad,_$text) wrap($iPad, $sPad, $text)]
   * [PerlKoLWiki KoL::Wiki]
 
 *Other files*
