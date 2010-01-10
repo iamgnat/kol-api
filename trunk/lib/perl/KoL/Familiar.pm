@@ -77,6 +77,8 @@ sub delete {
     delete($_familiarCache{$self->{'key'}}{'familiar'});
 }
 
+sub exists {return(exists($_familiarCache{$_[0]->{'key'}}{'familiar'}));}
+
 sub _getInfo {
     my $self = shift;
     my $key = shift;
