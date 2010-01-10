@@ -39,7 +39,7 @@ The result is 1|0 based on success or failure. In the event of a failure, _$@_ i
 *Example:*
 
 {{{
-$char->update();
+$fam->update();
 }}}
 
 ===availableEquipment()===
