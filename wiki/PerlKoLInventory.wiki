@@ -18,6 +18,10 @@ This module manages information about the character's inventory.
 
 <wiki:toc max_depth="3" />
 
+= TODO =
+
+This is a stub module. Count on nothing staying the same.
+
 ==Methods==
 ===new(%args)===
 This is the constructor of the object and simply sets up the data storage.

@@ -18,6 +18,10 @@ This deals with gather information from the [http://kol.coldfront.net/thekolwiki
 
 <wiki:toc max_depth="3" />
 
+= TODO =
+
+This module is rudimentary at best. May want to get more details from the Wiki rather than from KoL to reduce hits to KoL. Don't know. Just thinking...
+
 ==Methods==
 ===new(%args)===
 This is the constructor of the object.

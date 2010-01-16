@@ -18,6 +18,10 @@ This module manages information about the character.
 
 <wiki:toc max_depth="3" />
 
+= TODO =
+
+Just consider this a temporary place holder and everything will potentially change.
+
 ==Methods==
 ===new(%args)===
 This is the constructor of the object and simply sets up the data storage.

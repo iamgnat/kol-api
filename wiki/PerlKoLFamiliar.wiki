@@ -18,6 +18,10 @@ This module offers an object oriented view of a familiar. Instances of this obje
 
 <wiki:toc max_depth="3" />
 
+= TODO =
+
+The Familiar functionality is currently a big old bag of mess. It will change. A lot.
+
 ==Methods==
 ===exists()===
 Returns a 1 or 0 if the familiar still exists.

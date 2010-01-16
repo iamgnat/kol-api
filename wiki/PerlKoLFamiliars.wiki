@@ -18,6 +18,10 @@ This module is to work with a character's familiars.
 
 <wiki:toc max_depth="3" />
 
+= TODO =
+
+The Familiar functionality is currently a big old bag of mess. It will change. A lot.
+
 ==Methods==
 ===new(%args)===
 This is the constructor of the object and simply sets up the data storage.
