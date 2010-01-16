@@ -11,6 +11,7 @@ use KoL::FileUtils;
 use KoL::Logging;
 use KoL::TextUtils;
 use KoL::Session;
+use KoL::Item;
 use KoL::Character;
 use KoL::Familiars;
 use KoL::Inventory;
@@ -84,6 +85,13 @@ $cli->addOption(
     'description'   => 'Test KoL::Inventory.'
 );
 $cli->addOption(
+    'name'          => 'items',
+    'short-name'    => 'I',
+    'type'          => 'boolean',
+    'default'       => 0,
+    'description'   => 'Test KoL::Item::*.'
+);
+$cli->addOption(
     'name'          => 'wiki',
     'short-name'    => 'w',
     'type'          => 'boolean',
@@ -108,6 +116,7 @@ testCommandLine() if ($cli->getValue('command-line') || $cli->getValue('test-all
 testTextUtils() if ($cli->getValue('text-utils') || $cli->getValue('test-all'));
 testFileUtils() if ($cli->getValue('file-utils') || $cli->getValue('test-all'));
 testSession() if ($cli->getValue('session') || $cli->getValue('test-all'));
+testItems() if ($cli->getValue('items') || $cli->getValue('test-all'));
 testCharacter() if ($cli->getValue('character') || $cli->getValue('test-all'));
 testFamiliars() if ($cli->getValue('familiars') || $cli->getValue('test-all'));
 testInventory() if ($cli->getValue('inventory') || $cli->getValue('test-all'));
@@ -446,15 +455,8 @@ sub testFamiliars {
         exit(1);
     }
     
-    if (!$fam->update()) {
-        $log->error("Unable to update familiar list: $@");
-        $sess->logout();
-        exit(1);
-    }
-    $log->msg("Update after to login succeeded.");
-    
     my $curr = $fam->currentFamiliar();
-    if (!$curr && $@ ne '') {
+    if ($@) {
         $log->error("Unable to get current familiar: $@");
         $sess->logout();
         exit(1);
@@ -474,6 +476,8 @@ sub testFamiliars {
                     "familiar, it is equiped, and after unequiping " .
                     "it the first equipable item is lockable.");
     } else {
+        $log->msg("We are going to work with " . $curr->name() . " the " .
+                    $curr->weight() . "lb " . $curr->type());
         if ($curr->name() =~ m/changed by KoLAPI/) {
             $log->msg("Familiar name previously changed by this test script.");
         } else {
@@ -488,6 +492,8 @@ sub testFamiliars {
         if (!$curr->equip()) {
             $log->msg("Your current familiar isn't equiped. Can't test unequip().");
         } else {
+            $log->msg("Your current familiar is equipped with a " .
+                        $curr->equip()->name());
             if (!$fam->unequip($curr)) {
                 $log->error("Unable to unequip familiar: $@");
                 $sess->logout();
@@ -497,7 +503,7 @@ sub testFamiliars {
         }
         
         my $eq = $fam->availableEquipment();
-        if (!$eq && $@ ne '') {
+        if ($@) {
             $log->error("Unable to retrieve list of available equipment: $@");
             $sess->logout();
             exit(1);
@@ -508,6 +514,8 @@ sub testFamiliars {
             $log->msg("You do not have any available familiar equipment. " .
                         "Unable to test equip(), lock(), and unlock()!");
         } else {
+            $log->msg("We are going to equip " . $curr->name() .
+                        " with a " . $eq->[0]->name() . ".");
             if (!$fam->equip($curr, $eq->[0])) {
                 $log->error("Unable to equip item: $@");
                 $sess->logout();
@@ -535,6 +543,133 @@ sub testFamiliars {
         $log->error("Unable to logout '$user': $@");
         exit(1);
     }
+    
+    return;
+}
+
+sub testItems {
+    $log->msg("Testing KoL::Item::*");
+    my $sess = KoL::Session->new(
+        'email'         => $mail,
+    );
+    
+    if (!$sess->login($user)) {
+        $log->error("Unable to login as '$user': $@");
+        exit(1);
+    }
+    
+    my $controller = {'session' => $sess, 'log' => $log};
+    
+    my @tests = (
+        {
+            'type'      => 'Booze',
+            'name'      => 'bottle of gin',
+            'descid'    => '693995227'
+        },
+        {
+            'type'      => 'Food',
+            'name'      => 'lemon',
+            'descid'    => '286050768'
+        },
+        {
+            'type'      => 'Usable',
+            'name'      => 'hot wad',
+            'descid'    => '802361695'
+        },
+        {
+            'type'      => 'Hat',
+            'name'      => 'wreath of laurels',
+            'descid'    => '691085302'
+        },
+        {
+            'type'      => 'Weapon',
+            'name'      => 'Underworld flail',
+            'descid'    => '229893442'
+        },
+        {
+            'type'      => 'Pants',
+            'name'      => 'square sponge pants',
+            'descid'    => '714193120'
+        },
+        {
+            'type'      => 'Accessory',
+            'name'      => 'pirate fledges',
+            'descid'    => '642596336'
+        },
+        {
+            'type'      => 'OffHandItem',
+            'name'      => 'continuum transfunctioner',
+            'descid'    => '488592577'
+        },
+        {
+            'type'      => 'FamiliarEquipment',
+            'name'      => 'little bitty bathysphere',
+            'descid'    => '149442346'
+        },
+        {
+            'type'      => 'Shirt',
+            'name'      => 'sea salt scrubs',
+            'descid'    => '501620697'
+        },
+        {
+            'type'      => 'Misc',
+            'name'      => 'guitar pick',
+            'descid'    => '376472670'
+        },
+        {
+            'type'      => 'Potion',
+            'name'      => 'goofballs',
+            'descid'    => '185274556'
+        },
+        {
+            'type'      => 'CombatItem',
+            'name'      => 'disease',
+            'descid'    => '482996145'
+        },
+    );
+    $log->msg("Testing by descid lookup.");
+    foreach my $test (@tests) {
+        $log->msg("Looking up " . $test->{'name'});
+        my $obj = KoL::Item->new(
+            'controller'    => $controller,
+            'descid'        => $test->{'descid'}
+        );
+        if (!$obj) {
+            $log->error("Unable to lookup item: $@");
+            $sess->logout();
+            exit(1);
+        }
+        if (ref($obj) ne "KoL::Item::" . $test->{'type'}) {
+            $log->error("Item returned is of type '" . ref($obj) . 
+                        "' rather than 'Kol::Item::" . $test->{'type'} . "'.");
+            $sess->logout();
+            exit(1);
+        }
+        $log->msg("    Found '" . $obj->name() . "'.");
+    }
+    
+    $log->msg("Testing by name lookup.");
+    foreach my $test (@tests) {
+        $log->msg("Looking up " . $test->{'name'});
+        my $obj = KoL::Item->new(
+            'controller'    => $controller,
+            'name'          => $test->{'name'}
+        );
+        if (!$obj) {
+            $log->error("Unable to lookup item: $@");
+            $sess->logout();
+            exit(1);
+        }
+        if (ref($obj) ne "KoL::Item::" . $test->{'type'}) {
+            $log->error("Item returned is of type '" . ref($obj) . 
+                        "' rather than 'Kol::Item::" . $test->{'type'} . "'.");
+            $sess->logout();
+            exit(1);
+        }
+        $log->msg("    Found '" . $obj->name() . "'.");
+    }
+    
+    $sess->logout();
     
     return;
 }
