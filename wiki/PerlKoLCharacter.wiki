@@ -1,4 +1,5 @@
 #summary KoL::Character module
+#labels TODO
 #sidebar PerlTOC
 
 *WARNING:*
