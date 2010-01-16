@@ -13,6 +13,8 @@ use KoL;
 use KoL::FileUtils;
 use KoL::TextUtils;
 
+$| = 1;
+
 my ($_singleton);
 
 sub new {
