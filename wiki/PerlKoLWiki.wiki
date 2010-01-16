@@ -36,8 +36,8 @@ The argument is a hash that can contain the following information:
 my $wiki = KoL::Wiki->new('email' => 'my@email.com', 'timeout' => 30);
 }}}
 
-===getPage($name)===
-This method request the [http://kol.coldfront.net/thekolwiki/index.php Wiki] page for the given item and returns a hash reference of information it obtains from the page.
+===getItemIds($name)===
+This method request the [http://kol.coldfront.net/thekolwiki/index.php Wiki] page for the given item and returns a hash reference of IDs it obtains from the page.
 
 In the even of an error, it returns _undef_ and sets _$@_.
 
