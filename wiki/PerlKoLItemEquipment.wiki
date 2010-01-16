@@ -20,6 +20,10 @@ This object is a subclass of [PerlKoLItemMisc KoL::Item::Misc]. Please see the d
 
 <wiki:toc max_depth="3" />
 
+= TODO =
+
+Need to add equip & unequip functionality.
+
 ==Methods==
 ===new(%args)===
 This is the constructor of the object and should only ever be called by a sub-class' _new()_ method.
