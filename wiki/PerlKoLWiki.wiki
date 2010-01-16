@@ -1,4 +1,5 @@
 #summary KoL::Wiki module
+#labels TODO
 #sidebar PerlTOC
 
 *WARNING:*
