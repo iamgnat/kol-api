@@ -31,8 +31,8 @@ sub new {
         }
     }
     
-    $self->{'inuse'} = 0;
-    $self->{'subtype'} = $args{'subtype'} if (exists($args{'subtype'}));
+    $self->{'inuse'} = exists($args{'inuse'}) ? $args{'inuse'} : 0;
+    $self->{'subtype'} = exists($args{'subtype'}) ? $args{'subtype'} : undef;
     
     bless($self, $class);
     
@@ -44,4 +44,12 @@ sub power {return($_[0]->{'power'});}
 sub enchantments {return($_[0]->{'enchantments'});}
 sub inUse {return($_[0]->_getInfo('inuse'))}
 
+sub setInUse {
+    my $self = shift;
+    my $val = shift || 0;
+    
+    $self->{'inuse'} = $val;
+    
+    return;
+}
 1;
