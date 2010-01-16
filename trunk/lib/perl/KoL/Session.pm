@@ -204,20 +204,20 @@ sub logout {
     
     return(1) if (!$self->{'sessionid'});
     
+    my $user = $self->{'user'};
     my $resp = $self->get('logout.php');
-    if (!$resp && $@ !~ m/Nightly Maintenance/is) {
+    if (!$resp && $@ !~ m/Nightly Maintenance|logged out/is) {
         $@ = "Unable to logout '" . $self->{'user'} . "': $@";
         return(0);
     }
     
     $self->{'kol'}->makeDirty();
     
-    my $user = $self->{'user'};
     $self->{'sessionid'} = undef;
     $self->{'user'} = undef;
     
     if (!$resp) {
-        $self->{'log'}->debug("Logout due to system maintenance.");
+        $self->{'log'}->debug("Logout by system.");
         return(1);
     }
     
@@ -257,6 +257,12 @@ sub _processResponse {
         my $hdrs = $prev->headers();
         if ($hdrs->{'location'} eq 'maint.php') {
             $@ = "KoL is down for Nightly Maintenance.";
+            return(undef);
+        }
+        if ($hdrs->{'location'} eq 'loggedout.php') {
+            $self->{'sessionid'} = undef;
+            $self->{'user'} = undef;
+            $@ = "You have been logged out.";
             return(undef);
         }
         if ($hdrs->{'location'} !~ m%http://([^/]+)/%s) {
