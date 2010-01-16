@@ -1,11 +1,29 @@
 #summary KoL::Item module
 #sidebar PerlTOC
 
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 This module is not intended for usage by bot builders. It is a helper module to other modules to simplify the creating of a type specific item objects. When the _new()_ method is called, rather than return an object of type _KoL::Item_ it returns the type specific object that it created for you (e.g. _KoL::Item::Booze_).
 
-<wiki:toc max_depth="3" />
+The object returned is based on the "Type" from the item description. Where there is no type, [PerlKoLItemMisc KoL::Item::Misc] is used. If the type name contains "weapon", [PerlKolItemWeapon KoL::Item::Weapon] is used and it's sub-type value is set to the full type string. For all other types, spaces and special characters are removed and the first letter of each word is capitalized (e.g. "off-hand item" -> "OffHandItem").
+
+==Objects==
+
+  * [PerlKoLItemAccessory KoL::Item::Accessory]
+  * [PerlKoLItemBooze KoL::Item::Booze]
+  * [PerlKoLItemCombatItem KoL::Item::CombatItem]
+  * [PerlKoLItemFamiliarEquipment KoL::Item::FamiliarEquipment]
+  * [PerlKoLItemFood KoL::Item::Food]
+  * [PerlKoLItemHat KoL::Item::Hat]
+  * [PerlKoLItemMisc KoL::Item::Misc]
+  * [PerlKoLItemOffHandItem KoL::Item::OffHandItem]
+  * [PerlKoLItemPants KoL::Item::Pants]
+  * [PerlKoLItemPotion KoL::Item::Potion]
+  * [PerlKoLItemShirt KoL::Item::Shirt]
+  * [PerlKoLItemUsable KoL::Item::Usable]
+  * [PerlKoLItemWeapon KoL::Item::Weapon]
 
 ==Methods==
 ===new(%args)===

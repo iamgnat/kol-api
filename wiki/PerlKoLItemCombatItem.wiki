@@ -1,13 +1,13 @@
 #summary KoL::Item::CombatItem module
 #sidebar PerlTOC
 
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 This object represents a Combat Item item.
 
 This object is a subclass of [PerlKoLItemMisc KoL::Item::Misc]. Please see the documentation for more details on the functionality of this object.
-
-<wiki:toc max_depth="3" />
 
 ==Methods==
 ===new(%args)===

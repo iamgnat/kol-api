@@ -1,13 +1,13 @@
 #summary KoL::Session module
 #sidebar PerlTOC
 
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 This is the primary module for interacting with [http://www.kingdomofloathing.com KoL].
 
 This module is responsible for abstracting the communication with the [http://www.kingdomofloathing.com KoL] server and managing the user's session information.
-
-<wiki:toc max_depth="3" />
 
 ==Methods==
 ===new(%args)===

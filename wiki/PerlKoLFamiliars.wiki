@@ -13,13 +13,13 @@ Using any functionality of this module at this time is just silly and at your ow
 
 You've been warned!
 
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 This module is to work with a character's familiars.
 
-<wiki:toc max_depth="3" />
-
-= TODO =
+== TODO ==
 
 The Familiar functionality is currently a big old bag of mess. It will change. A lot.
 

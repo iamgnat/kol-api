@@ -13,13 +13,13 @@ Using any functionality of this module at this time is just silly and at your ow
 
 You've been warned!
 
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 This module offers an object oriented view of a familiar. Instances of this object are intended to be created by [PerlKoLFamiliars#update() KoL::Familiars->update()] and as such the functionality to change familiar information will not be documented. 
 
-<wiki:toc max_depth="3" />
-
-= TODO =
+== TODO ==
 
 The Familiar functionality is currently a big old bag of mess. It will change. A lot.
 

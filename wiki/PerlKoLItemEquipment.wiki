@@ -13,15 +13,15 @@ Using any functionality of this module at this time is just silly and at your ow
 
 You've been warned!
 
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 This object is a generic representation of an equipment item. This object is not intended to be used directly, instead it is meant to be sub-classed for the specific item type.
 
 This object is a subclass of [PerlKoLItemMisc KoL::Item::Misc]. Please see the documentation for more details on the functionality of this object.
 
-<wiki:toc max_depth="3" />
-
-= TODO =
+== TODO ==
 
 Need to add equip & unequip functionality.
 

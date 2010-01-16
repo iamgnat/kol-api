@@ -13,13 +13,13 @@ Using any functionality of this module at this time is just silly and at your ow
 
 You've been warned!
 
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 This module manages information about the character's inventory.
 
-<wiki:toc max_depth="3" />
-
-= TODO =
+== TODO ==
 
 This is a stub module. Count on nothing staying the same.
 

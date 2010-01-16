@@ -13,13 +13,13 @@ Using any functionality of this module at this time is just silly and at your ow
 
 You've been warned!
 
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 This deals with gather information from the [http://kol.coldfront.net/thekolwiki/index.php KoL Wiki].
 
-<wiki:toc max_depth="3" />
-
-= TODO =
+== TODO ==
 
 This module is rudimentary at best. May want to get more details from the Wiki rather than from KoL to reduce hits to KoL. Don't know. Just thinking...
 

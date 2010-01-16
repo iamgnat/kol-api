@@ -1,11 +1,11 @@
-#summary KoL::Item::Booze module
+#summary KoL::Item::Food module
 #sidebar PerlTOC
 
 <wiki:toc max_depth="3" />
 
 = Introduction =
 
-This object represents a Booze item.
+This object represents a Food item.
 
 This object is a subclass of [PerlKoLItemMisc KoL::Item::Misc]. Please see the documentation for more details on the functionality of this object.
 

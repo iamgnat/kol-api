@@ -1,13 +1,13 @@
 #summary KoL::Logging module
 #sidebar PerlTOC
 
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 This module doesn't have anything to do with [http://www.kingdomofloathing.com KoL] itself. It is a generic object of logging utilities.
 
 As this is meant to handle global logging functionality, this is a singleton object.
-
-<wiki:toc max_depth="3" />
 
 ==Methods==
 ===new(%args)===

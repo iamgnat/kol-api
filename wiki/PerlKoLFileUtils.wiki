@@ -1,11 +1,11 @@
 #summary KoL::FileUtils module
 #sidebar PerlTOC
 
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 This module doesn't have anything to do with [http://www.kingdomofloathing.com KoL] itself. This module is simply a collection of file related functions.
-
-<wiki:toc max_depth="3" />
 
 =Exported Functions=
 

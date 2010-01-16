@@ -1,13 +1,13 @@
 #summary KoL module
 #sidebar PerlTOC
 
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 This is the main module for the [KoLAPI KoLAPI]. It's purpose is to hold configuration and status information that is general to the API in general.
 
 The end user of [KoLAPI KoLAPI] should not need to directly use this module.
-
-<wiki:toc max_depth="3" />
 
 =Exported Functions=
 

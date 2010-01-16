@@ -1,13 +1,13 @@
 #summary KoL::CommandLine module
 #sidebar PerlTOC
 
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 This module is focused on simplifying the use of command line arguments. This module does not have any interaction with the [http://www.kingdomofloathing.com KoL] servers.
 
 By default it parses the global _@ARGV_ when processing arguments. You can, however, pass an array reference to the [PerlKoLCommandLine#process($args) process()] for it to process instead of _@ARGV_.
-
-<wiki:toc max_depth="3" />
 
 ==Methods==
 ===new(%args)===

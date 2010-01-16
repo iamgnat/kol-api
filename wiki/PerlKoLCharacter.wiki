@@ -13,13 +13,13 @@ Using any functionality of this module at this time is just silly and at your ow
 
 You've been warned!
 
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 This module manages information about the character.
 
-<wiki:toc max_depth="3" />
-
-= TODO =
+== TODO ==
 
 Just consider this a temporary place holder and everything will potentially change.
 

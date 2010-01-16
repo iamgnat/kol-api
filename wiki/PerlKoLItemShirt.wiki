@@ -1,11 +1,11 @@
-#summary KoL::Item::Accessory module
+#summary KoL::Item::Shirt module
 #sidebar PerlTOC
 
 <wiki:toc max_depth="3" />
 
 = Introduction =
 
-This object represents an Accessory item.
+This object represents a Shirt item.
 
 This object is a subclass of [PerlKoLItemEquipment KoL::Item::Equipment]. Please see the documentation for more details on the functionality of this object.
 
@@ -16,4 +16,4 @@ This is the constructor of the object and should only ever be called by [PerlKoL
 This object does not take any additional hash arguments beyond what [PerlKoLItemEquipment#new(%args) KoL::Item::Equipment->new()] uses.
 
 ===subtype()===
-The _subtype()_ method is stubbed out as Accessories do not have sub-types.
+The _subtype()_ method is stubbed out as shirts do not have sub-types.

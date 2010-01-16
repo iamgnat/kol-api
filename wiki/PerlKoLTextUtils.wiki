@@ -1,11 +1,11 @@
 #summary KoL::TextUtils module
 #sidebar PerlTOC
 
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 This module doesn't have anything to do with [http://www.kingdomofloathing.com KoL] itself. It is a generic object of text manipulation utilities.
-
-<wiki:toc max_depth="3" />
 
 ==Methods==
 ===new()===
