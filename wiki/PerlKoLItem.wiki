@@ -1,0 +1,29 @@
+#summary KoL::Item module
+#sidebar PerlTOC
+
+= Introduction =
+
+This module is not intended for usage by bot builders. It is a helper module to other modules to simplify the creating of a type specific item objects. When the _new()_ method is called, rather than return an object of type _KoL::Item_ it returns the type specific object that it created for you (e.g. _KoL::Item::Booze_).
+
+<wiki:toc max_depth="3" />
+
+==Methods==
+===new(%args)===
+This is the pseudo-constructor of the object.
+
+The argument is a hash that can contain the following information:
+
+|| *Key* || *Required* || *Description* ||
+|| controller || Yes || The object that is acting as the controller for the item being created. ||
+|| name || No || The name of the item to create. ||
+|| descid || No || The description id of the item to create. ||
+
+Either the _name_ or _descid_ element must be present. If _descid_ is present, it looks up the item information using 'desc_item.php'. If _descid_ is not present, it queries the KoL Wiki for the _name_ to get the _descid_ and then looks up in the information as described.
+
+See the individual item types for additional elements that are relevant to their specific type.
+
+*Example:*
+
+{{{
+my $item = KoL::Item->new('controller' => $self, 'name' => 'bottle of gin');
+}}}
