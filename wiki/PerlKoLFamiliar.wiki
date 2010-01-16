@@ -1,6 +1,17 @@
 #summary KoL::Familiar module
 #sidebar PerlTOC
 
+*WARNING:*
+
+This module is currently under active development. This means that:
+
+  # The API is not complete and functionality is being added and changed as it is developed.
+  # The documentation is likely not up to date with the code.
+
+Using any functionality of this module at this time is just silly and at your own risk.
+
+You've been warned!
+
 = Introduction =
 
 This module offers an object oriented view of a familiar. Instances of this object are intended to be created by [PerlKoLFamiliars#update() KoL::Familiars->update()] and as such the functionality to change familiar information will not be documented. 
