@@ -71,7 +71,7 @@ sub new {
     return($self);
 }
 
-sub getPage {
+sub getItemIds {
     my $self = shift;
     my $name = shift;
     $name =~ s/\s/_/g;
