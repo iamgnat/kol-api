@@ -80,6 +80,8 @@ Returns 1|0 if the item is a quest item.
 ===count()===
 Returns the number of instances of the item.
 
+A result of 0 indicates that there are no more instances of the item available in association with the controller (e.g. inventory, closet, display case, clan stash, mall store).
+
 ===muscleRequired()===
 Returns the muscle required to use the item or 0.
 

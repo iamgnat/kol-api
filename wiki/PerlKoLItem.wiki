@@ -36,6 +36,14 @@ The argument is a hash that can contain the following information:
 || name || No || The name of the item to create. ||
 || descid || No || The description id of the item to create. ||
 
+The _controller_ object must meet the following criteria:
+
+  * Contains a [PerlKoLSession KoL::Session] reference named _session_.
+  * Contains a [PerlKoLLogging KoL::Logging] reference named _log_.
+  * Has a method named _update()_ that does not require any arguments.
+
+When called, it is expected that the _update()_ method of _controller_ will perform the proper work to re-fetch the most current information. It is suggested that when updating, the controlling object set the _count_ to zero for all items it controls. A _count_ of 0 should indicate to the bot builder that there are no more of these items left in the controlled area (e.g. inventory, closet, display case, clan stash, or mall store).
+
 Either the _name_ or _descid_ element must be present. If _descid_ is present, it looks up the item information using 'desc_item.php'. If _descid_ is not present, it queries the KoL Wiki for the _name_ to get the _descid_ and then looks up in the information as described.
 
 See the individual item types for additional elements that are relevant to their specific type.
