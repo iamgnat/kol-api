@@ -78,9 +78,18 @@ sub getInfo {
     my $key = shift;
     $@ = "";
     
-    my @caller = caller(3);
-    if ($caller[3] ne ref($self->{'controller'}) . '::update') {
-        return(0) if (!$self->{'controller'}->update());
+    # Don't try to update the controller if the update is already
+    #   in progress.
+    my $update = ref($self->{'controller'}) . '::update';
+    my $found = 0;
+    for (my $i = 1 ; my @caller = caller($i) ; $i++) {
+        if ($caller[3] eq $update) {
+            $found = 1;
+            last;
+        }
+    }
+    if (!$found) {
+        return(undef) if(!$self->{'controller'}->update());
     }
     
     return($self->{$key});
