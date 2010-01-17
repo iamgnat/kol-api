@@ -73,7 +73,7 @@ sub new {
     return($self);
 }
 
-sub _getInfo {
+sub getInfo {
     my $self = shift;
     my $key = shift;
     $@ = "";
