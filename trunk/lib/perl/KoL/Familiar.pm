@@ -8,99 +8,127 @@
 package KoL::Familiar;
 
 use strict;
-use Digest::MD5;
-use KoL::Logging;
-
-my (%_familiarCache);
 
 sub new {
     my $class = shift;
     my %args = @_;
     
-    foreach my $key (qw(id familiars)) {
+    foreach my $key (qw(id name type controller)) {
         next if (exists($args{$key}));
         $@ = "'$key' not suplied in the argument hash!";
         return(undef);
     }
     
-    # Make a hopefully unique key to store the info with.
-    my $key = ":" . $args{'familiars'}->{'session'}->user() . ":" .
-                $args{'id'} . ":" . $args{'familiars'}->{'session'} . 
-                ":" . $args{'familiars'} . ":";
-    $key = Digest::MD5::md5_hex($key);
+    my $content = $args{'content'};
+    my $self = {
+        'id'                    => $args{'id'},
+        'name'                  => $args{'name'},
+        'type'                  => $args{'type'},
+        'controller'            => $args{'controller'},
+        'weight'                => 0,
+        'exp'                   => 0,
+        'kills'                 => 0,
+        'current'               => 0,
+        'equip'                 => undef,
+    };
     
-    my ($self);
-    if (exists($_familiarCache{$key})) {
-        $self = $_familiarCache{$key}{'obj'};
-    } else {
-        $self = {
-            'key'       => $key,
-            'familiars' => $args{'familiars'},
-        };
-        
-        bless($self, $class);
-    }
+    bless($self, $class);
     
-    return($@) if (!$self->update(%args));
+    $self->setWeight($args{'weight'}) if (exists($args{'weight'}));
+    $self->setExp($args{'exp'}) if (exists($args{'exp'}));
+    $self->setKills($args{'kills'}) if (exists($args{'kills'}));
+    $self->setCurrent($args{'current'}) if (exists($args{'current'}));
+    $self->setEquip($args{'equip'}) if (exists($args{'equip'}));
     
     return($self);
 }
 
-sub update {
-    my $self = shift;
-    my %args = @_;
-    
-    my $familiar = exists($_familiarCache{$self->{'key'}}{'familiar'}) ?
-                    $_familiarCache{$self->{'key'}}{'familiar'} : {};
-    
-    $args{'exp'} =~ s/,//g if (exists($args{'exp'}));
-    $args{'kills'} =~ s/,//g if (exists($args{'kills'}));
-    
-    $familiar->{'id'} = $args{'id'} if (exists($args{'id'}));
-    $familiar->{'name'} = $args{'name'} if (exists($args{'name'}));
-    $familiar->{'weight'} = $args{'weight'} if (exists($args{'weight'}));
-    $familiar->{'type'} = $args{'type'} if (exists($args{'type'}));
-    $familiar->{'exp'} = $args{'exp'} if (exists($args{'exp'}));
-    $familiar->{'kills'} = $args{'kills'} if (exists($args{'kills'}));
-    $familiar->{'equip'} = $args{'equip'} if (exists($args{'equip'}));
-    $familiar->{'current'} = $args{'current'} if (exists($args{'current'}));
-    
-    $_familiarCache{$self->{'key'}}{'obj'} = $self;
-    $_familiarCache{$self->{'key'}}{'familiar'} = $familiar;
-    
-    return(1);
-}
-
-sub delete {
-    my $self = shift;
-    
-    delete($_familiarCache{$self->{'key'}}{'familiar'});
-}
-
-sub exists {
-    my $self = shift;
-    
-    return(0) if (!$self->{'familiars'}->update());
-    return(exists($_familiarCache{$self->{'key'}}{'familiar'}));
-}
-
-sub _getInfo {
+sub getInfo {
     my $self = shift;
     my $key = shift;
     $@ = "";
     
-    return (undef) if (!$self->exists());
-    return($_familiarCache{$self->{'key'}}{'familiar'}{$key});
+    # Don't try to update the controller if the update is already
+    #   in progress.
+    my $update = ref($self->{'controller'}) . '::update';
+    my $found = 0;
+    for (my $i = 1 ; my @caller = caller($i) ; $i++) {
+        if ($caller[3] eq $update) {
+            $found = 1;
+            last;
+        }
+    }
+    if (!$found) {
+        return(undef) if(!$self->{'controller'}->update());
+    }
+    
+    return($self->{$key});
 }
 
-sub id {return($_[0]->_getInfo('id'));}
+sub id {return($_[0]->{'id'});}
+sub type {return($_[0]->{'type'});}
 sub name {return($_[0]->_getInfo('name'));}
 sub weight {return($_[0]->_getInfo('weight'));}
-sub type {return($_[0]->_getInfo('type'));}
 sub exp {return($_[0]->_getInfo('exp'));}
 sub kills {return($_[0]->_getInfo('kills'));}
 sub equip {return($_[0]->_getInfo('equip'));}
 sub isCurrent {return($_[0]->_getInfo('current'));}
+
+sub setWeight {
+    my $self = shift;
+    my $val = shift;
+    
+    return if ($val !~ m/^[\d,]+$/);
+    
+    $val =~ s/,//g;
+    $self->{'weight'} = $val;
+    return
+}
+
+sub setExp {
+    my $self = shift;
+    my $val = shift;
+    
+    return if ($val !~ m/^[\d,]+$/);
+    
+    $val =~ s/,//g;
+    $self->{'exp'} = $val;
+    return
+}
+
+sub setKills {
+    my $self = shift;
+    my $val = shift;
+    
+    return if ($val !~ m/^[\d,]+$/);
+    
+    $val =~ s/,//g;
+    $self->{'kills'} = $val;
+    return
+}
+
+sub setCurrent {
+    my $self = shift;
+    my $val = shift;
+    
+    return if ($val !~ m/^[01]$/);
+    
+    $self->{'current'} = $val;
+    return
+}
+
+sub setEquip {
+    my $self = shift;
+    my $val = shift;
+    
+    return if (ref($val) ne 'KoL::Item::FamiliarEquipment');
+    
+    my $inuse = $val->inUse();
+    $val->setInUse($inuse + 1);
+    
+    $self->{'equip'} = $val;
+    return
+}
 
 1;
 
