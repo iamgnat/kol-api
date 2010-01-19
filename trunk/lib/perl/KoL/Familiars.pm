@@ -11,9 +11,8 @@ use strict;
 use KoL;
 use KoL::Logging;
 use KoL::Session;
-use KoL::Inventory;
+use KoL::Item;
 use KoL::Familiar;
-use KoL::Wiki;
 
 sub new {
     my $class = shift;
@@ -30,10 +29,9 @@ sub new {
     my $self = {
         'kol'       => $kol,
         'session'   => $args{'session'},
-        'inventory' => $args{'inventory'} || undef,
         'log'       => KoL::Logging->new(),
         'current'   => undef,
-        'familiars' => [],
+        'familiars' => {},
         'equipment' => {},
         'dirty'     => 0
     };
@@ -46,12 +44,14 @@ sub new {
 sub dirty {
     my $self = shift;
     
+    $self->{'log'}->debug("Checking dirtiness against " . $self->{'dirty'});
     return($self->{'kol'}->dirty() > $self->{'dirty'});
 }
 
 sub update {
     my $self = shift;
     my $resp = ref($_[0]) ne 'HTTP::Response' ? undef : shift;
+    my $log = $self->{'log'};
     
     if (!$self->{'session'}->loggedIn()) {
         $@ = "You must be logged in to use this method.";
@@ -60,17 +60,31 @@ sub update {
     
     return(1) if (!$self->dirty() && !$resp);
     
-    $self->{'log'}->msg("Updating familiar info.", 10);
-    my $wiki = KoL::Wiki->new('session' => $self->{'session'});
-    my $inv = KoL::Inventory->new('session' => $self->{'session'});
+    $log->debug("Updating familiar info.");
     
-    my $equip = $self->{'inventory'} || KoL::Inventory->new('session' => $self->{'session'});
+    # Reset items in use by familiars.
+    foreach my $id (keys(%{$self->{'familiars'}})) {
+        $self->{'familiars'}{$id}->setCurrent(0);
+        my $eq = $self->{'familiars'}{$id}->equip();
+        next if (!$eq);
+        $eq->setCount(0);
+        $eq->setLocked(0);
+        $eq->setInUse(0);
+    }
     
-    my $familiars = [];
-    my $equipment = {};
-    my ($current);
+    # Reset unused items.
+    foreach my $name (keys(%{$self->{'equipment'}})) {
+        my $eq = $self->{'equipment'}{$name};
+        $eq->setCount(0);
+        $eq->setLocked(0);
+        $eq->setInUse(0);
+    }
     
-    $self->{'log'}->msg("Processing familiar.php.", 15);
+    # Unset the current familiar in case they don't have a current familiar
+    #   anymore.
+    $self->{'current'} = undef;
+    
+    $log->msg("Processing familiar.php.", 15);
     $resp = $self->{'session'}->get('familiar.php') if (!$resp);
     return (0) if (!$resp);
     
@@ -81,37 +95,67 @@ sub update {
     
     # Current familiar
     if ($content =~ m/Current Familiar:.+?fam\((.+?)\).*?<b>(.+?)<.+?br>(\d+)-\S+ (.+?) \(([\d,]+).+?, ([\d,]+) /s) {
-        $current = KoL::Familiar->new(
-            'id'        => $1,
-            'name'      => $2,
-            'weight'    => $3,
-            'type'      => $4,
-            'exp'       => $5,
-            'kills'     => $6,
-            'equip'     => undef,
-            'current'   => 1,
-            'familiars' => $self,
-        );
+        my ($current);
+        my $id = $1;
+        my $name = $2;
+        my $weight = $3;
+        my $type = $4;
+        my $exp = $5;
+        my $kills = $6
         
-        if ($content =~ m/>Equipment:.+?descitem\((\d+)\)/s) {
-            my $equip = $inv->itemInfo($1);
-            if (!$equip) {
-                $@ = "Unable to get current familiar equipment info: $@";
+        $log->debug("Processing current familiar.");
+        if (exists($self->{'familiars'}{$id})) {
+            $current = $self->{'familiars'}{$id};
+        } else {
+            $current = KoL::Familiar->new(
+                'id'            => $id,
+                'name'          => $name,
+                'type'          => $type,
+                'controller'    => $self,
+            );
+            return (0) if (!$current);
+            $self->{'familiars'}{$id} = $current;
+        }
+        $self->{'current'} = $current;
+        
+        # Update info.
+        $current->setWeight($weight);
+        $current->setExp($exp);
+        $current->setKills($kills);
+        $current->setCurrent(1);
+        
+        if ($content !~ m/>Equipment:.+?descitem\((\d+)\)/s) {
+            # Current familiar might have been un-equipped.
+            $current->setEquip(undef);
+        } else {
+            my ($equip);
+            my $descid = $1;
+            $log->debug("Processing current familiar's equipment ($descid).");
+            if ($current->equip() && $current->equip()->descid() == $descid) {
+                $equip = $current->equip();
+            } else {
+                $equip = KoL::Item->new(
+                    'descid'        => $descid,
+                    'controller'    => $self,
+                );
+                return(0) if (!$equip);
+                $current->setEquip($equip);
+            }
+            
+            $equip->setInUse($equip->inUse() + 1);
+            $equip->setCount($equip->count() + 1);
+            $equip->setLocked($content =~ m%itemimages/padlock.gif% ? 1 : 0);
+            
+            if (!$current->update('equip' => $equip)) {
+                $@ = "Unable to add equipment to familiar: $@";
                 return(0);
             }
-            $equip->{'count'} = 1;
-            $equip->{'usedby'} = [$current];
-            $equip->{'locked'} = $content =~ m%itemimages/padlock.gif% ? 1 : 0;
-            $equipment->{$equip->{'name'}} = $equip;
-            
-            $current->update('equip' => $equip);
         }
-        
-        push(@{$familiars}, $current);
     }
     
     # Extra equipment
     if ($content =~ m/<select name=whichitem>(.+?)<\/select>/s) {
+        $log->debug("Processing extra equipment.");
         my $opts = $1;
         while ($opts =~ m/value=(\d+)>(.+?)</gs) {
             my $eid = $1;
@@ -119,6 +163,7 @@ sub update {
             my $count = 1;
             
             next if ($name =~ m/select an item/);
+            $log->debug("Working with '$name' and '$eid'.");
             
             if ($name =~ m/^(.+?) \(([\d,]+)\)/s) {
                 $name = $1;
@@ -126,86 +171,94 @@ sub update {
                 $count =~ s/,//g
             }
             
-            if (exists($equipment->{$name})) {
-                $equipment->{$name}{'count'} += $count;
-                $equipment->{$name}{'feid'} = $eid;
+            my ($equip);
+            if (exists($self->{'equipment'}{$name})) {
+                $equip = $self->{'equipment'}{$name};
             } else {
-                my $info = $wiki->getPage($name);
-                if (!$info) {
-                    $@ = "Unable to get wiki info for '$name': $@";
-                    return(undef);
-                }
-                my $equip = $inv->itemInfo($info->{'desc'});
-                if (!$equip) {
-                    $@ = "Unable to get wiki item for '$name': $@";
-                    return(undef);
-                }
-                $equip->{'count'} = $count;
-                $equip->{'usedby'} = [];
-                $equip->{'feid'} = $eid;
-                $equip->{'locaked'} = 0;
-                $equipment->{$name} = $equip;
+                $equip = KoL::Item->new(
+                    'name'          => $name,
+                    'feid'          => $eid,
+                    'controller'    => $self,
+                );
+                return(0) if (!$equip);
+                $self->{'equipment'}{$name} = $equip;
             }
+            
+            $equip->setCount($equip->count() + $count);
+            
+            $equipment->{$equip->name()} = $equip;
         }
     }
     
     # Familiars
     while ($content =~ m/<input .+? value=(\d+)>.*?<b>(.+?)<.+?(\d+)-\S+ (.+?) \(([\d,]+).+?([\d,]+)(.+?)<\/tr>/gs) {
+        my ($fam);
+        my $id = $1;
+        my $name = $2;
+        my $weight = $3;
+        my $type = $4;
+        my $exp = $5;
+        my $kills = $6
         my $equip = $7;
-        my $fam = KoL::Familiar->new(
-            'id'        => $1,
-            'name'      => $2,
-            'weight'    => $3,
-            'type'      => $4,
-            'exp'       => $5,
-            'kills'     => $6,
-            'equip'     => undef,
-            'current'   => 0,
-            'familiars' => $self,
-        );
         
-        if ($equip !~ m/descitem\((.+?)\)/s) {
-            undef($equip);
+        $log->debug("Processing '$name' ($id).");
+        if (exists($self->{'familiars'}{$id})) {
+            $fam = $self->{'familiars'}{$id};
         } else {
-            my $i = $1;
-            $equip = $inv->itemInfo($i);
-            if (!$equip) {
-                $@ = "Unable to get familiar equipment info for '$i': $@";
-                return(undef);
-            }
-            
-            $fam->{'equip'} = $equip;
-            if (exists($equipment->{$equip->{'name'}})) {
-                $equipment->{$equip->{'name'}}{'count'}++;
-                push(@{$equipment->{$equip->{'name'}}{'usedby'}}, $fam);
-            } else {
-                $fam->{'equip'}{'locked'} = 0;
-            }
-            
-            $fam->update('equip' => $equip);
+            $fam = KoL::Familiar->new(
+                'id'            => $id,
+                'name'          => $name,
+                'type'          => $type,
+                'controller'    => $self,
+            );
+            return(0) if (!$fam);
+            $self->{'familiars'}{$id} = $fam;
         }
         
-        push(@{$familiars}, $fam);
+        # Update info.
+        $current->setWeight($weight);
+        $current->setExp($exp);
+        $current->setKills($kills);
+        $current->setCurrent(0);
+        
+        if ($equip !~ m/descitem\((.+?)\)/s) {
+            # It may have been unequipped.
+            $fam->setEquip(undef);
+        } else {
+            my ($equip);
+            my $descid = $1;
+            $log->debug("Processing familiar's equipment ($descid).");
+            if ($fam->equip() && $fam->equip()->descid() == $descid) {
+                $equip = $fam->equip();
+            } else {
+                $equip = KoL::Item->new(
+                    'descid'        => $descid,
+                    'controller'    => $self,
+                );
+                return(0) if (!$equip);
+                $fam->setEquip($equip);
+            }
+            
+            $equip->setInUse($equip->inUse() + 1);
+            $equip->setCount($equip->count() + 1);
+        }
     }
     
     # Mark the update time so we know when we need to update again.
     $self->{'dirty'} = time();
     
-    $self->{'current'} = $current;
-    $self->{'familiars'} = $familiars;
-    $self->{'equipment'} = $equipment;
     return(1);
 }
 
 sub availableEquipment {
     my $self = shift;
     
+    $self->{'log'}->debug("Getting available equipment.");
     return(undef) if ($self->dirty() && !$self->update());
     
     my (@equip);
-    foreach my $eq (keys(%{$self->{'equipment'}})) {
-        next if (!exists($self->{'equipment'}{$eq}{'feid'}));
-        push(@equip, $self->{'equipment'}{$eq});
+    foreach my $name (keys(%{$self->{'equipment'}})) {
+        push(@equip, $self->{'equipment'}{$name});
     }
     
     return(\@equip);
@@ -215,6 +268,7 @@ sub currentFamiliar {
     my $self = shift;
     
     $@ = "";
+    $self->{'log'}->debug("Getting current familiar.");
     return(undef) if ($self->dirty() && !$self->update());
     
     return($self->{'current'});
@@ -224,6 +278,7 @@ sub allFamiliars {
     my $self = shift;
     
     $@ = "";
+    $self->{'log'}->debug("Getting all familiars.");
     return(undef) if ($self->dirty() && !$self->update());
     
     return($self->{'familiars'});
@@ -243,6 +298,8 @@ sub changeName {
         $@ = "Invalid Familiar reference.";
         return(0);
     }
+    
+    $self->{'log'}->debug("Changing name of " . $fam->name());
     
     if ($name =~ m/^\s*$/) {
         $@ = "Whitespace is not a valid name!";
@@ -294,6 +351,8 @@ sub unequip {
     }
     
     return(0) if ($self->dirty() && !$self->update());
+    
+    $self->{'log'}->debug("Unequiping " . $fam->name());
     
     my $page = 'familiar.php';
     my $form = {
@@ -349,8 +408,15 @@ sub equip {
         return(0);
     }
     
-    if (!exists($item->{'feid'})) {
-        $@ = "Item is aready in use or not familiar equipment.";
+    $self->{'log'}->debug("Equiping " . $fam->name() . " with " .
+                            $item->name());
+    
+    if (ref($item) ne 'KoL::Item::FamiliarEquipment') {
+        $@ = "Item is not familiar equipment.";
+        return(0);
+    }
+    if (!$item->feid()) {
+        $@ = "None of these items are available for equipping.";
         return(0);
     }
     
@@ -361,7 +427,7 @@ sub equip {
     my $resp = $self->{'session'}->post('familiar.php', {
         'action'    => 'equip',
         'whichfam'  => $fid,
-        'whichitem' => $item->{'feid'},
+        'whichitem' => $item->feid(),
         'pwd'       => $self->{'session'}->pwdhash(),
     });
     return(0) if (!$resp);
@@ -387,12 +453,15 @@ sub equip {
 sub unlock {
     my $self = shift;
     
+    $self->{'log'}->debug("Unlock");
     return($self->lock(1, @_));
 }
 
 sub lock {
     my $self = shift;
     my $unlock = shift || 0;
+    
+    $self->{'log'}->debug("(Un)Locking");
     
     if (!$self->{'session'}->loggedIn()) {
         $@ = "You must be logged in to use this method.";
@@ -408,12 +477,12 @@ sub lock {
     }
     
     my $equip = $self->{'current'}->equip();
-    if ($unlock && !$equip->{'locked'}) {
+    if ($unlock && !$equip->locked()) {
         $@ = "The current equipment is not locked.";
         return(1); # We set the message in case they want some info, but we'll "succeed".
     }
 
-    if (!$unlock && $equip->{'locked'}) {
+    if (!$unlock && $equip->locked()) {
         $@ = "The current equipment is already locked.";
         return(1); # We set the message in case they want some info, but we'll "succeed".
     }
