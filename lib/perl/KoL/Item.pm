@@ -64,6 +64,7 @@ sub new {
                 return(undef);
             }
             $descid = $info->{'desc'};
+            $args{'descid'} = $descid;
         }
     
         # Item description
@@ -103,7 +104,7 @@ sub new {
             $@ = $err;
             return(undef);
         }
-    
+        
         # Make a hopefully unique key to store the info with.
         my $key1 = ":" . $args{'controller'}->{'session'}->user() . ":" .
                     $self->name() . ":" . $args{'controller'}->{'session'} . 
