@@ -42,7 +42,7 @@ sub new {
 sub subtype {return($_[0]->{'subtype'});}
 sub power {return($_[0]->{'power'});}
 sub enchantments {return($_[0]->{'enchantments'});}
-sub inUse {return($_[0]->_getInfo('inuse'))}
+sub inUse {return($_[0]->getInfo('inuse'))}
 
 sub setInUse {
     my $self = shift;
