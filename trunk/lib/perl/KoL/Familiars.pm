@@ -87,10 +87,7 @@ sub update {
     $log->msg("Processing familiar.php.", 15);
     $resp = $self->{'session'}->get('familiar.php') if (!$resp);
     return (0) if (!$resp);
-    
-    # Nuke any current familiars for them to be updated.
-    foreach my $fam (@{$self->{'familiars'}}) {$fam->delete();}
-    
+        
     my $content = $resp->content();
     
     # Current familiar
@@ -101,7 +98,7 @@ sub update {
         my $weight = $3;
         my $type = $4;
         my $exp = $5;
-        my $kills = $6
+        my $kills = $6;
         
         $log->debug("Processing current familiar.");
         if (exists($self->{'familiars'}{$id})) {
@@ -146,10 +143,7 @@ sub update {
             $equip->setCount($equip->count() + 1);
             $equip->setLocked($content =~ m%itemimages/padlock.gif% ? 1 : 0);
             
-            if (!$current->update('equip' => $equip)) {
-                $@ = "Unable to add equipment to familiar: $@";
-                return(0);
-            }
+            $current->equip($equip);
         }
     }
     
@@ -186,7 +180,7 @@ sub update {
             
             $equip->setCount($equip->count() + $count);
             
-            $equipment->{$equip->name()} = $equip;
+            $self->{'equipment'}{$equip->name()} = $equip;
         }
     }
     
@@ -198,7 +192,7 @@ sub update {
         my $weight = $3;
         my $type = $4;
         my $exp = $5;
-        my $kills = $6
+        my $kills = $6;
         my $equip = $7;
         
         $log->debug("Processing '$name' ($id).");
@@ -216,10 +210,10 @@ sub update {
         }
         
         # Update info.
-        $current->setWeight($weight);
-        $current->setExp($exp);
-        $current->setKills($kills);
-        $current->setCurrent(0);
+        $fam->setWeight($weight);
+        $fam->setExp($exp);
+        $fam->setKills($kills);
+        $fam->setCurrent(0);
         
         if ($equip !~ m/descitem\((.+?)\)/s) {
             # It may have been unequipped.
@@ -245,7 +239,7 @@ sub update {
     }
     
     # Mark the update time so we know when we need to update again.
-    $self->{'dirty'} = time();
+    $self->{'dirty'} = $self->{'kol'}->time();
     
     return(1);
 }
@@ -281,7 +275,11 @@ sub allFamiliars {
     $self->{'log'}->debug("Getting all familiars.");
     return(undef) if ($self->dirty() && !$self->update());
     
-    return($self->{'familiars'});
+    my (@fams);
+    foreach my $id (keys(%{$self->{'familiars'}})) {
+        push(@fams, $self->{'familiars'}{$id});
+    }
+    return(\@fams);
 }
 
 sub changeName {

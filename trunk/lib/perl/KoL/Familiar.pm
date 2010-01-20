@@ -67,12 +67,12 @@ sub getInfo {
 
 sub id {return($_[0]->{'id'});}
 sub type {return($_[0]->{'type'});}
-sub name {return($_[0]->_getInfo('name'));}
-sub weight {return($_[0]->_getInfo('weight'));}
-sub exp {return($_[0]->_getInfo('exp'));}
-sub kills {return($_[0]->_getInfo('kills'));}
-sub equip {return($_[0]->_getInfo('equip'));}
-sub isCurrent {return($_[0]->_getInfo('current'));}
+sub name {return($_[0]->getInfo('name'));}
+sub weight {return($_[0]->getInfo('weight'));}
+sub exp {return($_[0]->getInfo('exp'));}
+sub kills {return($_[0]->getInfo('kills'));}
+sub equip {return($_[0]->getInfo('equip'));}
+sub isCurrent {return($_[0]->getInfo('current'));}
 
 sub setWeight {
     my $self = shift;
