@@ -109,7 +109,7 @@ sub tradable {return($_[0]->{'tradable'});}
 sub discardable {return($_[0]->{'discardable'});}
 sub meat {return($_[0]->{'meat'});}
 sub quest {return($_[0]->{'quest'});}
-sub count {return($_[0]->_getInfo('count'));}
+sub count {return($_[0]->getInfo('count'));}
 sub muscleRequired {return($_[0]->{'muscleRequired'});}
 sub mysticalityRequired {return($_[0]->{'mysticalityRequired'});}
 sub moxieRequired {return($_[0]->{'moxieRequired'});}
