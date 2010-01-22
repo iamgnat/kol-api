@@ -13,7 +13,7 @@ sub new {
     my $class = shift;
     my %args = @_;
     
-    foreach my $key (qw(id name type controller)) {
+    foreach my $key (qw(id type controller)) {
         next if (exists($args{$key}));
         $@ = "'$key' not suplied in the argument hash!";
         return(undef);
@@ -22,7 +22,7 @@ sub new {
     my $content = $args{'content'};
     my $self = {
         'id'                    => $args{'id'},
-        'name'                  => $args{'name'},
+        'name'                  => undef,
         'type'                  => $args{'type'},
         'controller'            => $args{'controller'},
         'weight'                => 0,
@@ -34,6 +34,7 @@ sub new {
     
     bless($self, $class);
     
+    $self->setName($args{'name'}) if (exists($args{'name'}));
     $self->setWeight($args{'weight'}) if (exists($args{'weight'}));
     $self->setExp($args{'exp'}) if (exists($args{'exp'}));
     $self->setKills($args{'kills'}) if (exists($args{'kills'}));
@@ -73,6 +74,17 @@ sub exp {return($_[0]->getInfo('exp'));}
 sub kills {return($_[0]->getInfo('kills'));}
 sub equip {return($_[0]->getInfo('equip'));}
 sub isCurrent {return($_[0]->getInfo('current'));}
+sub unequip {return($_[0]->{'controller'}->unequip(@_));}
+sub changeName {return($_[0]->{'controller'}->changeName(@_));}
+sub take {return($_[0]->{'controller'}->takeThisOne(@_));}
+
+sub setName {
+    my $self = shift;
+    my $val = shift;
+    
+    $self->{'name'} = $val;
+    return;
+}
 
 sub setWeight {
     my $self = shift;
@@ -82,7 +94,7 @@ sub setWeight {
     
     $val =~ s/,//g;
     $self->{'weight'} = $val;
-    return
+    return;
 }
 
 sub setExp {
@@ -93,7 +105,7 @@ sub setExp {
     
     $val =~ s/,//g;
     $self->{'exp'} = $val;
-    return
+    return;
 }
 
 sub setKills {
@@ -104,7 +116,7 @@ sub setKills {
     
     $val =~ s/,//g;
     $self->{'kills'} = $val;
-    return
+    return;
 }
 
 sub setCurrent {
@@ -114,7 +126,7 @@ sub setCurrent {
     return if ($val !~ m/^[01]$/);
     
     $self->{'current'} = $val;
-    return
+    return;
 }
 
 sub setEquip {
@@ -127,7 +139,7 @@ sub setEquip {
     $val->setInUse($inuse + 1);
     
     $self->{'equip'} = $val;
-    return
+    return;
 }
 
 1;

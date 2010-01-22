@@ -106,7 +106,6 @@ sub update {
         } else {
             $current = KoL::Familiar->new(
                 'id'            => $id,
-                'name'          => $name,
                 'type'          => $type,
                 'controller'    => $self,
             );
@@ -116,6 +115,7 @@ sub update {
         $self->{'current'} = $current;
         
         # Update info.
+        $current->setName($name);
         $current->setWeight($weight);
         $current->setExp($exp);
         $current->setKills($kills);
@@ -201,7 +201,6 @@ sub update {
         } else {
             $fam = KoL::Familiar->new(
                 'id'            => $id,
-                'name'          => $name,
                 'type'          => $type,
                 'controller'    => $self,
             );
@@ -210,6 +209,7 @@ sub update {
         }
         
         # Update info.
+        $fam->setName($name);
         $fam->setWeight($weight);
         $fam->setExp($exp);
         $fam->setKills($kills);
@@ -510,6 +510,74 @@ sub lock {
     
     # Rebuild the familiar info based off the result.
     return($self->update($resp));
+}
+
+sub takeThisOne {
+    my $self = shift;
+    my $fam = shift;
+    
+    if (!$self->{'session'}->loggedIn()) {
+        $@ = "You must be logged in to use this method.";
+        return(0);
+    }
+    
+    return(0) if ($self->dirty() && !$self->update());
+    
+    if (ref($fam) ne 'KoL::Familiar') {
+        $@ = "Invalid Familiar reference.";
+        return(0);
+    }
+    
+    my $resp = $self->{'session'}->get('familiar.php', {
+        'action'    => 'newfam',
+        'newfam'    => $fam->id(),
+    });
+    return(0) if (!$resp);
+    
+    # Make it dirty now just incase the change really worked by we
+    #   don't know it for some reason.
+    $self->{'kol'}->makeDirty();
+    
+    if ($resp->content() !~ m/You take .+? with you/) {
+        $self->{'session'}->logResponse("Unable to take familiar:", $resp);
+        $@ = "Unable to take familiar!";
+        return(0);
+    }
+    
+    return(1);
+}
+
+sub putAway {
+    my $self = shift;
+    
+    if (!$self->{'session'}->loggedIn()) {
+        $@ = "You must be logged in to use this method.";
+        return(0);
+    }
+    
+    return(0) if ($self->dirty() && !$self->update());
+    
+    if (!$self->{'current'}) {
+        $@ = "No current familiar to put away.";
+        return(1);
+    }
+    
+    my $resp = $self->{'session'}->get('familiar.php', {
+        'action'    => 'putback',
+    });
+    return(0) if (!$resp);
+    
+    # Make it dirty now just incase the change really worked by we
+    #   don't know it for some reason.
+    $self->{'kol'}->makeDirty();
+    
+    if ($resp->content() !~ m/You put .+? back in the Terrarium/) {
+        $self->{'session'}->logResponse("Unable to put away familiar:", $resp);
+        $@ = "Unable to put away familiar!";
+        return(0);
+    }
+    
+    return(1);
 }
 
 1;
