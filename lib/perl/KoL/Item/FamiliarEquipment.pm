@@ -28,6 +28,7 @@ sub new {
 
 sub setLocked {$_[0]->{'locked'} = $_[1] ? 1 : 0;}
 sub locked {return($_[0]->getInfo('locked'));}
+sub setFeid {$_[0]->{'feid'} = $_[1] ? $_[1] : 0;}
 sub feid {return($_[0]->{'feid'});}
 
 # Stub out the bits that don't apply to familiar equipment.

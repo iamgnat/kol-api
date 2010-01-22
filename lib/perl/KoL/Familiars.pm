@@ -171,13 +171,13 @@ sub update {
             } else {
                 $equip = KoL::Item->new(
                     'name'          => $name,
-                    'feid'          => $eid,
                     'controller'    => $self,
                 );
                 return(0) if (!$equip);
                 $self->{'equipment'}{$name} = $equip;
             }
             
+            $equip->setFeid($eid);
             $equip->setCount($equip->count() + $count);
             
             $self->{'equipment'}{$equip->name()} = $equip;
@@ -415,6 +415,8 @@ sub equip {
     }
     if (!$item->feid()) {
         $@ = "None of these items are available for equipping.";
+        use Data::Dumper;
+        print Dumper($item);
         return(0);
     }
     
