@@ -40,7 +40,7 @@
     * [PerlKoLTerrarium#equip($fam,_$item) equip($fam, $item)]
     * [PerlKoLTerrarium#lock() lock()]
     * [PerlKoLTerrarium#unlock() unlock()]
-    * [PerlKoLTerrarium#takeThisOne($fam) takeThisOne()]
+    * [PerlKoLTerrarium#takeThisOne($fam) takeThisOne($fam)]
     * [PerlKoLTerrarium#putAway() putAway()]
   * [PerlKoLFileUtils KoL::FileUtils]
     * [PerlKoLFileUtils#readFile($file) readFile($file)]
