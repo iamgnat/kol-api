@@ -2,52 +2,17 @@
 #labels TODO
 #sidebar PerlTOC
 
-*WARNING:*
-
-This module is currently under active development. This means that:
-
-  # The API is not complete and functionality is being added and changed as it is developed.
-  # The documentation is likely not up to date with the code.
-
-Using any functionality of this module at this time is just silly and at your own risk.
-
-You've been warned!
-
 <wiki:toc max_depth="3" />
 
 = Introduction =
 
-This module offers an object oriented view of a familiar. Instances of this object are intended to be created by [PerlKoLFamiliars#update() KoL::Familiars->update()] and as such the functionality to change familiar information will not be documented. 
-
-== TODO ==
-
-The Familiar functionality is currently a big old bag of mess. It will change. A lot.
+This module offers an object oriented view of a familiar. Instances of this object are intended to be created by [PerlKoLTerrarium#update() KoL::Terrarium->update()] and as such the functionality to change familiar information will not be documented. 
 
 ==Methods==
-===exists()===
-Returns a 1 or 0 if the familiar still exists.
-
-As there does not appear to be a way to actively delete a familiar in the game, a 0 result really indicates some type of an error.
-
-If there is an error during processing, 0 is returned and _$@_ is set.
-
-*Example:*
-
-{{{
-my $res = $fam->exists();
-if (!$res && $@) {
-    print "Unable to check existence of familiar: $@\n";
-} elsif (!$res) {
-    print "No such familiar.\n";
-} else {
-    print "Familiar exists.\n";
-}
-}}}
-
 ===id()===
+===type()===
 ===name()===
 ===weight()===
-===type()===
 ===exp()===
 ===kills()===
 These methods return the named stat of the familiar.
@@ -58,15 +23,15 @@ In the event of an error, _undef_ is returned and _$@_ is set.
 
 {{{
 my $id = $fam->id();
+my $type = $fam->type();
 my $name = $fam->name();
 my $weight = $fam->weight();
-my $type = $fam->type();
 my $exp = $fam->exp();
 my $kills = $fam->kills();
 }}}
 
 ===equip()===
-This method returns a [PerlKoLItem KoL::Item] reference to the familiar's equipped item.
+This method returns a [PerlKoLItemFamiliarEquipment KoL::Item::FamiliarEquipment] reference to the familiar's equipped item.
 
 If the familiar does not currently have an item equipped or an error occurs, _undef_ is returned. In the event of an error, _$@_ is set to the error message.
 
@@ -100,3 +65,34 @@ if (!$curr && $@) {
     print "Current.\n";
 }
 }}}
+
+===unequip()===
+This causes the familiar to be unequipped of it's current item. This is the same as if you called [PerlKoLTerrarium#unequip($fam) KoL::Terrarium->unequip()] and passed it this familiar object.
+
+*Example:*
+{{{
+if (!$fam->unequip()) {
+    print "Unable to unequip familiar: $@\n";
+}
+}}}
+
+===changeName($name)===
+This will attempt to change the familiar's name to _$name_. This simply calls [PerlKoLTerrarium#changeName($fam,_$name) KoL::Terrarium->changeName()] and passes the familiar object and supplied _$name_.
+
+*Example:*
+{{{
+if (!$fam->changeName("Commander Bun Bun")) {
+    print "Unable to change familiar name: $@\n";
+}
+}}}
+
+===take()===
+Makes this your current familiar. This is a wrapper for [PerlKoLTerrarium#takeThisOne($fam) KoL::Terrarium->takeThisOne()] and passes the familiar's object as the variable.
+
+*Example:*
+{{{
+if (!$fam->take()) {
+    print "Unable to take familiar: $@\n";
+}
+}}}
+ 

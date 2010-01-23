@@ -1,27 +1,12 @@
-#summary KoL::Familiars module
+#summary KoL::Terrarium module
 #labels TODO
 #sidebar PerlTOC
-
-*WARNING:*
-
-This module is currently under active development. This means that:
-
-  # The API is not complete and functionality is being added and changed as it is developed.
-  # The documentation is likely not up to date with the code.
-
-Using any functionality of this module at this time is just silly and at your own risk.
-
-You've been warned!
 
 <wiki:toc max_depth="3" />
 
 = Introduction =
 
-This module is to work with a character's familiars.
-
-== TODO ==
-
-The Familiar functionality is currently a big old bag of mess. It will change. A lot.
+This module allows you to manage the Terrarium and access your familiars.
 
 ==Methods==
 ===new(%args)===
@@ -33,18 +18,18 @@ If there is an error, _undef_ is returned and _$@_ is set.
 
 *Example:*
 {{{
-my $fam = KoL::Familiars->new('session' => $sess);
+my $ter = KoL::Terrarium->new('session' => $sess);
 }}}
 
 ===update()===
-If no information is cached or the last time it was cached was before the [PerlKoL KoL->dirty()] time, this method requests 'familiar.php' and gathers information from it.
+If no information is cached or the last time it was cached was before the [PerlKoL#dirty() KoL->dirty()] time, this method requests 'familiar.php' and gathers information from it.
 
 The result is 1|0 based on success or failure. In the event of a failure, _$@_ is set to a meaningful value.
 
 *Example:*
 
 {{{
-$fam->update();
+$ter->update();
 }}}
 
 ===availableEquipment()===
@@ -55,7 +40,7 @@ In the event of an error, _undef_ is returned and _$@_ is set with an error mess
 *Example:*
 
 {{{
-my $equip = $fam->availableEquipment();
+my $equip = $ter->availableEquipment();
 if (!$equip) {
     print "Unable to get available equipment: $@\n";
     exit(1);
@@ -66,12 +51,12 @@ print "You have " . (0 + @{$equip}) . " unused familiar equipment items.\n";
 ===currentFamiliar()===
 Returns the [PerlKoLFamiliar KoL::Familiar] instance for the current familiar in use.
 
-If no familiar is in use, _undef_ will be returned. An _undef_ result is also returned in the event of an error so you need to check _$@_ to see if it has a value to distinguish the two cases.
+If no familiar is in use, _undef_ will be returned. An _undef_ result is also returned in the event of an error in which case _$@_ is also set with the error message.
 
 *Example:*
 
 {{{
-my $curr = $fam->currentFamiliar();
+my $curr = $ter->currentFamiliar();
 if ($@) {
     print "Unable to retrieve current familiar: $@\n";
     exit(1);
@@ -88,7 +73,7 @@ In the event of an error, _undef_ is returned and _$@_ is set.
 *Example:*
 
 {{{
-my $fams = $fam->allFamiliars();
+my $fams = $ter->allFamiliars();
 if (!$fams) {
     print "Unable to retrieve all familiars: $@\n";
     exit(1);
@@ -102,10 +87,11 @@ _$fam_ is a [PerlKoLFamiliar KoL::Familiar] instance as returned by _currentFami
 
 Returns 1 on success and 0 for an error. In the event of an error, _$@_ is set.
 
-*Example:*
+You may also perform this action by calling [PerlKoLFamiliar#changeName($name) changeName()] on a familiar instance. This method processes the request if you change the name via the familiar's object instance.
 
+*Example:*
 {{{
-if (!$fam->changeName($fams->[0], $fams->[0]{'name'} . " Now with more Lemon!")) {
+if (!$ter->changeName($fams->[0], $fams->[0]{'name'} . " Now with more Lemon!")) {
     print "Unable to change familiar name: $@\n";
     exit(1);
 }
@@ -118,10 +104,12 @@ _$fam_ is a [PerlKoLFamiliar KoL::Familiar] instance as returned by _currentFami
 
 Returns 0 on failure and sets _$@_ to an error message.
 
+This is the method that is called if you call [PerlKolFamiliar#unequip() unequip()] on a familiar instance.
+
 *Example:*
 
 {{{
-if (!$fam->unequip($fams->[0])) {
+if (!$ter->unequip($fams->[0])) {
     print "Unable to unequip familiar: $@\n";
     exit(1);
 }
@@ -139,7 +127,7 @@ On error, 0 is returned and _$@_ is set to an error message.
 *Example:*
 
 {{{
-if (!$fam->equip($curr, $equip->[3])) {
+if (!$ter->equip($curr, $equip->[3])) {
     print "Unable to equip familiar: $@\n";
     exit(1);
 }
@@ -154,13 +142,37 @@ Returns 0 and sets _$@_ in the event it is unable to do so.
 *Examples:*
 
 {{{
-if (!$fam->lock()) {
+if (!$ter->lock()) {
     print "Unable to lock current equipment: $@\n";
 }
 }}}
 
 {{{
-if (!$fam->unlock()) {
+if (!$ter->unlock()) {
     print "Unable to unlock current equipment: $@\n";
+}
+}}}
+
+===takeThisOne($fam)===
+Attempts to make the [PerlKolFamiliar KoL::Familiar] instance _$fam_ your current familiar.
+
+Returns 1 on success and 0 on failure. In the event of an error, $@ is set with an error message.
+
+*Example:*
+{{{
+if (!$ter->takeThisOne($fam)) {
+    print "Unable to take familiar from the Terrarium: $@\n";
+}
+}}}
+
+===putAway()===
+Attempts to return the current familiar to the Terrarium.
+
+Returns 1 on success and 0 on failure. In the event of an error, $@ is set with an error message.
+
+*Example:*
+{{{
+if (!$ter->putAway()) {
+    print "Unable to drop current familiar like a bad habit: $@\n";
 }
 }}}
