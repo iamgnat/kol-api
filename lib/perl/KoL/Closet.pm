@@ -132,8 +132,14 @@ sub putMeat {
         return(0);
     }
     
+    return(1) if ($meat == 0);
+    
     my $resp = $self->submitForm('addmeat', 'amt' => $meat);
     return(0) if (!$resp);
+    
+    # Make it dirty now just incase the change really worked but we
+    #   don't know it for some reason.
+    $self->{'kol'}->makeDirty();
     
     if ($resp->content() !~ m/You put ([\d,]+) Meat in your closet/) {
         $self->{'session'}->logResponse("Meat apparently not added.", $resp);
@@ -145,6 +151,193 @@ sub putMeat {
     
     if ($m != $meat) {
         $@ = "Only $m meat was put into the closet!";
+        return(0);
+    }
+    
+    return($self->update($resp));
+}
+
+sub takeMeat {
+    my $self = shift;
+    my $meat = shift;
+    
+    if ($meat !~ m/^\d+$/) {
+        $@ = "Invalid value for amount of meat!";
+        return(0);
+    }
+    
+    return(1) if ($meat == 0);
+    return(0) if ($self->dirty() && !$self->update());
+    
+    $meat = $self->{'meat'} if ($meat > $self->{'meat'});
+    
+    my $resp = $self->submitForm('takemeat', 'amt' => $meat);
+    return(0) if (!$resp);
+    
+    # Make it dirty now just incase the change really worked but we
+    #   don't know it for some reason.
+    $self->{'kol'}->makeDirty();
+    
+    if ($resp->content() !~ m/You take ([\d,]+) Meat out of your closet/) {
+        $self->{'session'}->logResponse("Meat apparently not removed.", $resp);
+        $@ = "Meat was not removed from your closet.";
+        return(0);
+    }
+    my $m = $1;
+    $m =~ s/,//g;
+    
+    if ($m != $meat) {
+        $@ = "Only $m meat was removed from the closet!";
+        return(0);
+    }
+    
+    return($self->update($resp));
+}
+
+sub putItems {
+    my $self = shift;
+    my @items = @_;
+    
+    return(1) if (!@items);
+    
+    if (@items > 11) {
+        $@ = "You may only put 11 items in the closet at one time.";
+        return(0);
+    }
+    
+    my (%form, @checks);
+    for (my $i = 0 ; $i < @items ; $i++) {
+        my $item = undef;
+        my $count = 0;
+        my $ref = ref($items[$i]);
+        
+        if ($ref =~ m/^KoL::Item::.+$/) {
+            $item = $items[$i];
+        } elsif ($ref eq 'ARRAY') {
+            if (ref($items[$i][0]) !~ m/^KoL::Item::.+$/) {
+                $@ = "First element of $i is not an Item instance!";
+                return(0);
+            }
+            $item = $items[$i][0];
+            
+            if (@{$items[$i]} > 1) {
+                $count = $items[$i][1];
+                $count =~ s/,//g;
+                if ($count !~ m/^\d+$/) {
+                    $@ = "The count supplied for $i is not valid!";
+                    return(0);
+                }
+            }
+        } else {
+            $@ = "Don't know what to do with element $i of your arguments!";
+            return(0);
+        }
+        
+        if ($item->{'controller'} != $self) {
+            $@ = "Item for element $i is not a closet item.";
+            return(0;)
+        }
+        
+        $count = $item->count() if ($count == 0);
+        next if (!$count);
+        
+        $form{'howmany' . ($i + 1)} = $count;
+        $form{'whichitem' . ($i + 1)} = $item->id();
+        push(@checks, $item->name());
+    }
+    
+    my $resp = $self->submitForm('put', %form);
+    return(0) if (!$resp);
+    
+    # Make it dirty now just incase the change really worked but we
+    #   don't know it for some reason.
+    $self->{'kol'}->makeDirty();
+    
+    $@ = '';
+    my (@err);
+    foreach my $item (@checks) {
+        if ($resp->content() !~ m/<b>$item \(.+?\) moved from inventory to closet/s) {
+            push(@err, $item);
+        }
+    }
+    if (@err) {
+        $@ = "The following items were not put into the closet: " .
+                join(', ', @err);
+        return(0);
+    }
+    
+    return($self->update($resp));
+}
+
+sub takeItems {
+    my $self = shift;
+    my @items = @_;
+    
+    return(1) if (!@items);
+    
+    if (@items > 11) {
+        $@ = "You may only take 11 items from the closet at one time.";
+        return(0);
+    }
+    
+    my (%form, @checks);
+    for (my $i = 0 ; $i < @items ; $i++) {
+        my $item = undef;
+        my $count = 0;
+        my $ref = ref($items[$i]);
+        
+        if ($ref =~ m/^KoL::Item::.+$/) {
+            $item = $items[$i];
+        } elsif ($ref eq 'ARRAY') {
+            if (ref($items[$i][0]) !~ m/^KoL::Item::.+$/) {
+                $@ = "First element of $i is not an Item instance!";
+                return(0);
+            }
+            $item = $items[$i][0];
+            
+            if (@{$items[$i]} > 1) {
+                $count = $items[$i][1];
+                $count =~ s/,//g;
+                if ($count !~ m/^\d+$/) {
+                    $@ = "The count supplied for $i is not valid!";
+                    return(0);
+                }
+            }
+        } else {
+            $@ = "Don't know what to do with element $i of your arguments!";
+            return(0);
+        }
+        
+        if ($item->{'controller'} != $self) {
+            $@ = "Item for element $i is not a closet item.";
+            return(0;)
+        }
+        
+        $count = $item->count() if ($count == 0);
+        next if (!$count);
+        
+        $form{'howmany' . ($i + 1)} = $count;
+        $form{'whichitem' . ($i + 1)} = $item->id();
+        push(@checks, $item->name());
+    }
+    
+    my $resp = $self->submitForm('take', %form);
+    return(0) if (!$resp);
+    
+    # Make it dirty now just incase the change really worked but we
+    #   don't know it for some reason.
+    $self->{'kol'}->makeDirty();
+    
+    $@ = '';
+    my (@err);
+    foreach my $item (@checks) {
+        if ($resp->content() !~ m/<b>$item \(.+?\) moved from closet to inventory/s) {
+            push(@err, $item);
+        }
+    }
+    if (@err) {
+        $@ = "The following items were not put into the closet: " .
+                join(', ', @err);
         return(0);
     }
     
