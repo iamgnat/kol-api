@@ -172,3 +172,16 @@ if ($resp->content() !~ m/What I was expecting/) {
     return(0);
 }
 }}}
+
+===lastResp()===
+This method returns the last _HTTP::Response_ result for the last request that was made. This is to allow you to do potential further processing on request results that may not have been done by the object/method that made the request.
+
+If no request has been made yet (e.g. before you login), undef is returned.
+
+*Example:*
+{{{
+my $resp = $sess->lastResp();
+if ($resp->content =~ m/Something i'm looking for/) {
+    # ...
+}
+}}}
