@@ -12,6 +12,7 @@ use Fcntl;
 use POSIX;
 use Symbol;
 use IO::Handle;
+use Time::HiRes;
 
 our(@ISA, @EXPORT);
 require Exporter;
@@ -63,10 +64,19 @@ sub dirty {
     return($self->{'dirty'});
 }
 
+sub time {
+    return(Time::HiRes::time());
+}
+
 sub makeDirty {
     my $self = shift || KoL->new();
     
-    $self->{'dirty'} = time();
+    # Standard seconds weren't good enough. Sleep for 100th of a
+    #   second (or smallest amount for the platform) so we know
+    #   there will be a difference when comparing against it.
+    $self->{'dirty'} = $self->time();
+    Time::HiRes::sleep(0.01);
+    
     return;
 }
 

@@ -2,10 +2,10 @@
 
 # Copyright KoLAPI (http://kol-api.googlecode.com)
 
-# Familiars.pm
-#   Class for familiar information
+# Terrarium.pm
+#   Class for dealing with the Terrarium
 
-package KoL::Familiars;
+package KoL::Terrarium;
 
 use strict;
 use KoL;
