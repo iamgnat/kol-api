@@ -48,7 +48,8 @@ sub new {
         'no_dos'        => {
             'second'    => 0,
             'count'     => 0,
-        }
+        },
+        'last_resp'     => undef,
     };
     
     bless($self, $class);
@@ -232,6 +233,8 @@ sub _processResponse {
     my $self = shift;
     my $resp = shift;
     
+    $self->{'last_resp'} = $resp;
+    
     # Simple record keeping to cut down on DoS like usage.
     if ($self->{'no_dos'}{'second'} != time()) {
         $self->{'no_dos'}{'second'} = time();
@@ -341,5 +344,7 @@ sub logResponse {
                         "\nCookie:\n" . $self->{'lwp'}->cookie_jar()->as_string() .
                         "\nContent:\n" . $resp->content(), $level);
 }
+
+sub lastResponse {return($_[0]->{'last_resp'});}
 
 1;
