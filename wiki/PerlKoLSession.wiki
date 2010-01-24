@@ -185,3 +185,11 @@ if ($resp->content =~ m/Something i'm looking for/) {
     # ...
 }
 }}}
+
+===stats()===
+Returns a [PerlKoLStats KoL::Stats] instance bound to this session. If you haven't called _login()_ or have already called _logout()_, _undef_ will be returned.
+
+*Example:*
+{{{
+my $stats = $sess->stats()
+}}}
