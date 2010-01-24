@@ -64,6 +64,13 @@ $cli->addOption(
     'description'   => 'Test KoL::Session.'
 );
 $cli->addOption(
+    'name'          => 'stats',
+    'short-name'    => 'S',
+    'type'          => 'boolean',
+    'default'       => 0,
+    'description'   => 'Test KoL::Stats.'
+);
+$cli->addOption(
     'name'          => 'character',
     'short-name'    => 'C',
     'type'          => 'boolean',
@@ -121,6 +128,7 @@ testCharacter() if ($cli->getValue('character') || $cli->getValue('test-all'));
 testTerrarium() if ($cli->getValue('terrarium') || $cli->getValue('test-all'));
 testInventory() if ($cli->getValue('inventory') || $cli->getValue('test-all'));
 testWiki() if ($cli->getValue('wiki') || $cli->getValue('test-all'));
+testStats() if ($cli->getValue('stats') || $cli->getValue('test-all'));
 
 $log->msg("Testing complete.");
 
@@ -727,6 +735,52 @@ sub testWiki {
     
     $log->msg("hot blooded (effect):");
     print Dumper($wiki->getPage("Hot Blooded"));
+    
+    return;
+}
+
+sub testStats {
+    $log->msg("Testing KoL::Stats");
+    my $sess = KoL::Session->new(
+        'email'         => $mail,
+    );
+    
+    if (!$sess->login($user)) {
+        $log->error("Unable to login as '$user': $@");
+        exit(1);
+    }
+    
+    my $stats = $sess->stats();
+    
+    my $mus = join('/', $stats->muscle());
+    my $mys = join('/', $stats->mysticality());
+    my $mox = join('/', $stats->moxie());
+    my $hp = join('/', $stats->hp());
+    my $mp = join('/', $stats->mp());
+    
+    my $effs = $stats->effects();
+    my $effects = '';
+    foreach my $name (sort(keys(%{$effs}))) {
+        $effects .= "\n    $name (" . $effs->{$name}{'count'} . ")";
+    }
+    
+    $log->msg("Current Stats:" .
+                "\nLevel: " . $stats->level() .
+                "\nTitle: " . $stats->title() .
+                "\nMeat:  " . $stats->meat() .
+                "\nTurns Left: " . $stats->turns() .
+                "\nLast Adventure: " . $stats->lastAdventure() .
+                "\nMuscle: $mus" .
+                "\nMysticality: $mys" .
+                "\nMoxie: $mox" .
+                "\nHP: $hp" .
+                "\nMP: $mp" .
+                "\nEffects:$effects");
+    
+    if (!$sess->logout()) {
+        $log->error("Unable to logout '$user': $@");
+        exit(1);
+    }
     
     return;
 }

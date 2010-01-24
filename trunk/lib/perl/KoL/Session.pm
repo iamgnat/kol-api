@@ -13,6 +13,7 @@ use LWP::UserAgent;
 use Digest::MD5;
 use URI::Escape;
 use KoL;
+use KoL::Stats;
 use KoL::Logging;
 
 sub new {
@@ -50,6 +51,7 @@ sub new {
             'count'     => 0,
         },
         'last_resp'     => undef,
+        'stats'         => undef,
     };
     
     bless($self, $class);
@@ -197,6 +199,9 @@ sub login {
     
     $self->{'kol'}->makeDirty();
     
+    $self->{'stats'} = KoL::Stats->new('session' => $self);
+    $self->{'stats'}->update($resp);
+    
     return(1);
 }
 
@@ -216,6 +221,7 @@ sub logout {
     
     $self->{'sessionid'} = undef;
     $self->{'user'} = undef;
+    $self->{'stats'} = undef;
     
     if (!$resp) {
         $self->{'log'}->debug("Logout by system.");
@@ -346,5 +352,6 @@ sub logResponse {
 }
 
 sub lastResponse {return($_[0]->{'last_resp'});}
+sub stats {return($_[0]->{'stats'});}
 
 1;
