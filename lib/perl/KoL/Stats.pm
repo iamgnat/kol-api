@@ -79,7 +79,7 @@ sub update {
     
     return(1) if (!$self->dirty());
     
-    $self->{'log'}->msg("Processing charpane.php.", 15);
+    $self->{'log'}->debug("Processing charpane.php.");
     my $resp = $self->{'session'}->get('charpane.php');
     return (0) if (!$resp);
     
