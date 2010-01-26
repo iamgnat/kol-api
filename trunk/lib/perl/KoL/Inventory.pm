@@ -11,6 +11,7 @@ use strict;
 use KoL;
 use KoL::Logging;
 use KoL::Session;
+use KoL::Item;
 
 my (%_detailsCache);
 
@@ -27,10 +28,14 @@ sub new {
     }
     
     my $self = {
-        'kol'       => $kol,
-        'session'   => $args{'session'},
-        'log'       => KoL::Logging->new(),
-        'dirty'     => 0,
+        'kol'           => $kol,
+        'session'       => $args{'session'},
+        'log'           => KoL::Logging->new(),
+        'dirty'         => 0,
+        'consumables'   => {},
+        'equipment'     => {},
+        'misc'          => {},
+        'types'         => {},
     };
     
     bless($self, $class);
@@ -44,119 +49,109 @@ sub dirty {
     return($self->{'kol'}->dirty() > $self->{'dirty'});
 }
 
-sub itemInfo {
+sub update {
     my $self = shift;
-    my $id = shift;
+    my $log = $self->{'log'};
     
-    if ($id !~ m/^\d+$/) {
-        $@ = "Invalid item id '$id'.";
-        return(undef);
+    if (!$self->{'session'}->loggedIn()) {
+        $@ = "You must be logged in to use this method.";
+        return(0);
     }
     
-    # If we don't have it or it's been over 12 hours, go get the info.
-    if (!exists($_detailsCache{$id}) || time() - $_detailsCache{$id}{'cached'} > 43200) {
-        $self->{'log'}->msg("No item info cache for '$id'.", 15);
-        
-        if (!$self->{'session'}->loggedIn()) {
-            $@ = "You must be logged in to use this method.";
-            return(0);
+    return(1) if (!$self->dirty());
+    
+    $log->debug("Updating inventory info.");
+    
+    # Reset items.
+    my @groups = qw(consumables equipment misc);
+    foreach my $group (@groups) {
+        foreach my $name (keys(%{$self->{$group}})) {
+            $self->{$group}{$name}->setCount(0);
+            $self->{$group}{$name}->setInUse(0);
         }
-
-        my $resp = $self->{'session'}->get('desc_item.php', {'whichitem' => $id});
-        return(undef) if (!$resp);
+    }
+    
+    
+    for (my $i = 0 ; $i < @groups ; ) {
+        my $group = $groups[$i];
+        $i++;
+        
+        $log->debug("Processing inventory.php?which=$i for $group.");
+        my $resp = $self->{'session'}->get('inventory.php', 'which' => $i);
+        return (0) if (!$resp);
         
         my $content = $resp->content();
-        my %info = (
-            'name'          => undef,
-            'type'          => 'misc',
-            'description'   => undef,
-            'tradable'      => 1,
-            'discardable'   => 1,
-            'meat'          => 0,
-            'quest'         => 0,
-            'required'      => {
-                'muscle'        => 0,
-                'mysticality'   => 0,
-                'moxie'         => 0,
-                'level'         => 0,
-            },
-            'equipment'     => {
-                'power'         => 0,
-                'enchantments'  => [],
+        while ($content =~ m/<img .+?'descitem\((.+?),.+?\).+?<b class="ircm">(.+?)<.+?<span(.+?)><font size=1>/sg) {
+            my $descid = $1;
+            my $name = $2;
+            my $span = $3;
+            my $count = 1;
+            
+            if ($span =~ m/\((.+?)\)/s) {
+                $count = $1;
+                $count =~ s/,//g;
             }
-        );
-        
-        # Bad item
-        if ($content =~ m/Invalid description ID/s) {
-            $@ = "'$id' is an invalid item ID.";
-            return(undef);
-        }
-        
-        # Get the name
-        if ($content !~ m/<center><img.+?<b>(.+?)</s) {
-            $self->{'session'}->logResponse("Unable to locate item name", $resp);
-            $@ = "Unable to locate item name!";
-            return(undef);
-        }
-        $info{'name'} = $1;
-        
-        # Get the description
-        if ($content !~ m/<blockquote.*?>(.+?)<br><br>/s) {
-            $self->{'session'}->logResponse("Unable to locate item name", $resp);
-            $@ = "Unable to locate item description!";
-            return(undef);
-        }
-        $info{'description'} = $1;
-        
-        # Get the type
-        $info{'type'} = $1 if ($content =~ m/>Type: <b>(.+?)</s);
-
-        # Power
-        $info{'equipment'}{'power'} = $1 if ($content =~ m/>Power: <b>(\d+)</s);
-        
-        # requirements
-        while ($content =~ m/>([Ml].+?) Required: <b>([\d,]+)</igs) {
-            my $type = lc($1);
-            my $val = $2;
-            $val =~ s/,//g;
-            $info{'required'}{$type} = $val;
-        }
-        
-        # Selling price
-        if ($content =~ m/>Selling Price: <b>([\d,]+) Meat.</s) {
-            $info{'meat'} = $1;
-            $info{'meat'} =~ s/,//g;
-        }
-        
-        # Non-tradable?
-        $info{'tradable'} = 0 if ($content =~ m/Cannot be traded/s);
-        
-        # Non-discardable?
-        $info{'discardable'} = 0 if ($content =~ m/Cannot be discarded/s);
-        
-        # Quest Item?
-        $info{'quest'} = 1 if ($content =~ m/Quest Item/s);
-        
-        # Enchantments
-        if ($content =~ m/>Enchantment:.+?<font.+?>(.+?)<\/font>/s) {
-            my $encs = $1;
-            while ($encs =~ m/(.+?)<br>/gs) {
-                push(@{$info{'equipment'}{'enchantments'}}, $1);
+            
+            $self->{'log'}->debug("Adding $count '$name' to inventory.");
+            if (exists($self->{$group}{$name})) {
+                $self->{$group}{$name}->setCount($count);
+            } else {
+                my $item = KoL::Item->new('controller' => $self, 'descid' => $descid);
+                return(0) if (!$item);
+                
+                my $type = ref($item);
+                $type =~ s/^KoL::Item:://;
+                
+                # Don't handle Familiar Equipment, make them use the
+                #   Tererrarium for that.
+                next if ($type eq 'FamiliarEquipment');
+                
+                $item->setCount($count);
+                $self->{$group}{$item->name()} = $item;
+                $self->{'types'}{$type}{$item->name()} = $item;
             }
         }
-        
-        $info{'cached'} = time();
-        $_detailsCache{$id} = \%info;
     }
     
-    if (exists($_detailsCache{$id})) {
-        my %info = %{$_detailsCache{$id}};
-        delete($info{'cached'});
-        return(\%info);
-    }
+    # Mark the update time so we know when we need to update again.
+    $self->{'dirty'} = $self->{'kol'}->time();
     
-    $@ = "Unable to location '$id'.";
-    return(undef);
+    return(1);
 }
+
+sub getTypeOfItem {
+    my $self = shift;
+    my $type = shift;
+    
+    return(undef) if (!$self->update());
+    return({}) if (!exists($self->{'types'}{$type}));
+    
+    my (%items);
+    foreach my $name (keys(%{$self->{'types'}{$type}})) {
+        next if ($self->{'types'}{$type}{$name}->count() == 0);
+        $items{$name} = $self->{'types'}{$type}{$name};
+    }
+    
+    if ($type eq 'Misc') {
+        foreach my $name (keys(%{$self->{'types'}{'Usable'}})) {
+            next if ($self->{'types'}{'Usable'}{$name}->count() == 0);
+            $items{$name} = $self->{'types'}{'Usable'}{$name};
+        }
+    }
+    
+    return(\%items);
+}
+
+sub accessories {return($_[0]->getTypeOfItem('Accessory'));}
+sub booze {return($_[0]->getTypeOfItem('Booze'));}
+sub combatItems {return($_[0]->getTypeOfItem('CombatItem'));}
+sub food {return($_[0]->getTypeOfItem('Food'));}
+sub hats {return($_[0]->getTypeOfItem('Hat'));}
+sub miscellaneous {return($_[0]->getTypeOfItem('Misc'));}
+sub offHandItems {return($_[0]->getTypeOfItem('OffHandItem'));}
+sub pants {return($_[0]->getTypeOfItem('Pants'));}
+sub potions {return($_[0]->getTypeOfItem('Potion'));}
+sub shirts {return($_[0]->getTypeOfItem('Shirt'));}
+sub weapons {return($_[0]->getTypeOfItem('Weapon'));}
 
 1;
