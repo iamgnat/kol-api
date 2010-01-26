@@ -115,7 +115,7 @@ sub login {
     }
     
     my ($resp);
-    $self->{'log'}->msg("Logging in as '$user'...", 10);
+    $self->{'log'}->debug("Logging in as '$user'...");
     
     # Get the hash key for hashing the password.
     #   Disable redirects so we can get the key.
@@ -175,9 +175,9 @@ sub login {
         return(0);
     }
         
-    $self->{'log'}->msg("Login request successful, processing results.", 10);
+    $self->{'log'}->debug("Login request successful, processing results.");
     my $cookies = $self->{'lwp'}->cookie_jar()->as_string();
-    $self->{'log'}->msg("Cookies:\n$cookies", 30);
+    $self->{'log'}->debug("Cookies:\n$cookies");
     if ($cookies !~ m/.*PHPSESSID\=(\w*).*/s) {
         $self->logResponse("Unable to locate session id after login as '$user'", $resp);
         $@ = "Unable to locate session id.";
@@ -319,7 +319,7 @@ sub request {
                     $self->{'no_dos'}{'count'} >= 30);
     
     my $url = 'http://' . $self->{'server'} . "/$uri";
-    $self->{'log'}->msg("'$type' request for '$url'.", 10);
+    $self->{'log'}->debug("'$type' request for '$url'.");
     return($self->_processResponse($self->{'lwp'}->$type($url, @args)));
 }
 

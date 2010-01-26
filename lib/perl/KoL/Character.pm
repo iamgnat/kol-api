@@ -57,7 +57,7 @@ sub update {
     return(1) if (!$self->dirty());
     
     my ($resp);
-    $self->{'log'}->msg("Updating character info.", 10);
+    $self->{'log'}->debug("Updating character info.");
     
     # Read the character pane
     my $player = {
@@ -94,7 +94,7 @@ sub update {
     my $skills = {};
     my $effects = {};
     
-    $self->{'log'}->msg("Processing charsheet.php.", 15);
+    $self->{'log'}->debug("Processing charsheet.php.");
     $resp = $self->{'session'}->get('charsheet.php');
     return (0) if (!$resp);
     

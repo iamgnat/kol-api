@@ -79,7 +79,7 @@ sub getItemIds {
     # Check the cache
     if (!exists($_cachedResults{$name}) ||
         time() - $_cachedResults{$name}{'cached'} > 3600) {
-        $self->{'log'}->msg("Searching Wiki for '$name'", 10);
+        $self->{'log'}->debug("Searching Wiki for '$name'");
         
         my $resp = $self->get("thekolwiki/index.php/$name");
         return(undef) if (!$resp);
@@ -94,16 +94,16 @@ sub getItemIds {
         
         if ($content !~ m/>Item number.*?:.*? (\d+)/ &&
             $content !~ m/>Effect number.*?:.*? (\d+)/) {
-            $self->{'log'}->msg("Page does not appear to be for an effect or item:\n" .
-                                $content, 30);
+            $self->{'log'}->debug("Page does not appear to be for an effect or item:\n" .
+                                $content);
             $@ = "Page does not appear to be for an effect or item!";
             return(undef);
         }
         my $id = $1;
         
         if ($content !~ m/>Description ID.*?:.+?> (.+?)</) {
-            $self->{'log'}->msg("Unable to locate description id:\n" .
-                                $content, 30);
+            $self->{'log'}->debug("Unable to locate description id:\n" .
+                                $content);
             $@ = "Unable to locate description id!";
             return(undef);
         }
@@ -178,7 +178,7 @@ sub request {
                     $self->{'no_dos'}{'count'} >= 30);
     
     my $url = 'http://' . $self->{'server'} . "/$uri";
-    $self->{'log'}->msg("'$type' request for '$url'.", 10);
+    $self->{'log'}->debug("'$type' request for '$url'.");
     return($self->_processResponse($self->{'lwp'}->$type($url, @args)));
 }
 
