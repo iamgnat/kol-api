@@ -77,7 +77,7 @@ sub update {
         $i++;
         
         $log->debug("Processing inventory.php?which=$i for $group.");
-        my $resp = $self->{'session'}->get('inventory.php', 'which' => $i);
+        my $resp = $self->{'session'}->get('inventory.php', {'which' => $i});
         return (0) if (!$resp);
         
         my $content = $resp->content();
@@ -136,6 +136,10 @@ sub getTypeOfItem {
         foreach my $name (keys(%{$self->{'types'}{'Usable'}})) {
             next if ($self->{'types'}{'Usable'}{$name}->count() == 0);
             $items{$name} = $self->{'types'}{'Usable'}{$name};
+        }
+        foreach my $name (keys(%{$self->{'types'}{'CraftingItem'}})) {
+            next if ($self->{'types'}{'CraftingItem'}{$name}->count() == 0);
+            $items{$name} = $self->{'types'}{'CraftingItem'}{$name};
         }
     }
     
