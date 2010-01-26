@@ -67,7 +67,7 @@ sub update {
         $self->{'items'}{$id}->setCount(0);
     }
     
-    $log->msg("Processing closet.php.", 15);
+    $log->debug("Processing closet.php.");
     $resp = $self->{'session'}->get('closet.php') if (!$resp);
     return (0) if (!$resp);
         

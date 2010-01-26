@@ -84,7 +84,7 @@ sub update {
     #   anymore.
     $self->{'current'} = undef;
     
-    $log->msg("Processing familiar.php.", 15);
+    $log->debug("Processing familiar.php.");
     $resp = $self->{'session'}->get('familiar.php') if (!$resp);
     return (0) if (!$resp);
         
