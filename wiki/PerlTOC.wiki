@@ -43,6 +43,8 @@
     * [PerlKoLItemBooze#new(%args) new(%args)]
   * [PerlKoLItemCombatItem KoL::Item::CombatItem]
     * [PerlKoLItemCombatItem#new(%args) new(%args)]
+  * [PerlKoLItemCraftingItem KoL::Item::CraftingItem]
+    * [PerlKoLItemCraftingItem#new(%args) new(%args)]
   * [PerlKoLItemEquipment KoL::Item::Equipment]
     * [PerlKoLItemEquipment#new(%args) new(%args)]
     * [PerlKoLItemEquipment#subtype() subtype()]

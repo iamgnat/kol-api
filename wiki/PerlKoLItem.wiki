@@ -14,6 +14,7 @@ The object returned is based on the "Type" from the item description. Where ther
   * [PerlKoLItemAccessory KoL::Item::Accessory]
   * [PerlKoLItemBooze KoL::Item::Booze]
   * [PerlKoLItemCombatItem KoL::Item::CombatItem]
+  * [PerlKoLItemCraftingItem KoL::Item::CraftingItem]
   * [PerlKoLItemFamiliarEquipment KoL::Item::FamiliarEquipment]
   * [PerlKoLItemFood KoL::Item::Food]
   * [PerlKoLItemHat KoL::Item::Hat]
