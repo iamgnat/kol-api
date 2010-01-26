@@ -13,6 +13,7 @@ use KoL::Wiki;
 use KoL::Item::Accessory;
 use KoL::Item::Booze;
 use KoL::Item::CombatItem;
+use KoL::Item::CraftingItem;
 use KoL::Item::FamiliarEquipment;
 use KoL::Item::Food;
 use KoL::Item::Hat;
