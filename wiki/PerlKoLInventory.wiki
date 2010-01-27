@@ -2,26 +2,11 @@
 #labels TODO
 #sidebar PerlTOC
 
-*WARNING:*
-
-This module is currently under active development. This means that:
-
-  # The API is not complete and functionality is being added and changed as it is developed.
-  # The documentation is likely not up to date with the code.
-
-Using any functionality of this module at this time is just silly and at your own risk.
-
-You've been warned!
-
 <wiki:toc max_depth="3" />
 
 = Introduction =
 
 This module manages information about the character's inventory.
-
-== TODO ==
-
-This is a stub module. Count on nothing staying the same.
 
 ==Methods==
 ===new(%args)===
@@ -36,19 +21,111 @@ If there is an error, _undef_ is returned and _$@_ is set.
 my $inv = KoL::Inventory->new('session' => $sess);
 }}}
 
-===itemInfo($id)===
-Returns a hash reference of information obtained from 'desc_item.php'. It also stores this information to reduce requests back to the [http://www.kingdomofloathing.com KoL] servers.
+===allItems()===
+Returns a hash reference containing all the items in you inventory. The key to the hash is the name of the item. If no items are present in your inventory, an empty hash reference is returned.
 
-The _$id_ value is the item description ID for the item you are looking up. In many cases you have to look your item up using [PerlKoLWiki#getPage($name) KoL::Wiki->getPage()] to find it in the [http://kol.coldfront.net/thekolwiki/index.php KoL Wiki].
-
-If there is an error the method returns _undef_ and sets _$@_.
+In the event of an error, _undef_ is returned and _$@_ is set.
 
 *Example:*
-
 {{{
-my $info = $inv->itemInfo(802361695);
-if (!$info) {
-    print "Unable to retrieve info for 802361695: $@\n";
-    exit(1);
+my $items = $inv->allItems();
+if ($@) {
+    print "Unable to get all items: $@\n";
+} else {
+    foreach my $name (sort(keys(%{$items}))) {
+        print "$name (" . $items->{$name}->count() . ")\n";
+    }
+}
+}}}
+
+===consumables()===
+Returns a hash reference containing all the items from the 'consumables' tab of the character's inventory. The key to the hash is the name of the item. If no items are present in your inventory, an empty hash reference is returned.
+
+In the event of an error, _undef_ is returned and _$@_ is set.
+
+*Example:*
+{{{
+my $cons = $inv->consumables();
+if ($@) {
+    print "Unable to get consumable items: $@\n";
+} else {
+    foreach my $name (sort(keys(%{$cons}))) {
+        print "$name (" . $cons->{$name}->count() . ")\n";
+    }
+}
+}}}
+
+===equipment()===
+Returns a hash reference containing all the items from the 'equipment' tab of the character's inventory. The key to the hash is the name of the item. If no items are present in your inventory, an empty hash reference is returned.
+
+In the event of an error, _undef_ is returned and _$@_ is set.
+
+*Example:*
+{{{
+my $eq = $inv->equipment();
+if ($@) {
+    print "Unable to get equipment items: $@\n";
+} else {
+    foreach my $name (sort(keys(%{$eq}))) {
+        print "$name (" . $eq->{$name}->count() . ")\n";
+    }
+}
+}}}
+
+===misc()===
+Returns a hash reference containing all the items from the 'misc' tab of the character's inventory. The key to the hash is the name of the item. If no items are present in your inventory, an empty hash reference is returned.
+
+In the event of an error, _undef_ is returned and _$@_ is set.
+
+*Example:*
+{{{
+my $misc = $inv->misc();
+if ($@) {
+    print "Unable to get misc items: $@\n";
+} else {
+    foreach my $name (sort(keys(%{$misc}))) {
+        print "$name (" . $misc->{$name}->count() . ")\n";
+    }
+}
+}}}
+
+===accessories()===
+===booze()===
+===combatItems()===
+===food()===
+===hats()===
+===offHandItems()===
+===pants()===
+===potions()===
+===shirts()===
+===weapons()===
+Returns a hash reference of the appropriate items. If there are no matching items, an empty hash reference is returned. The key of the hash is the item name.
+
+If there is an error, _undef_ is returned and _$@_ is set to an error message.
+
+*Example:*
+{{{
+my $booze = $inv->booze();
+if ($@) {
+    print "Unable to get booze: $@\n";
+} else {
+    foreach my $name (sort(keys(%{$booze}))) {
+        print "$name (" . $booze->{$name}->count() . ")\n";
+    }
+}
+}}}
+
+===miscellaneous()===
+This method functions the same as the others except that it returns items that don't fit in one of the other categories. The results consist of the Miscellaneous Consumables, Miscellaneous Items, and Quest Items that don't fall anywhere else.
+
+*Example:*
+{{{
+my $misc = $inv->miscellaneous();
+if ($@) {
+    print "Unable to get miscellaneous items: $@\n";
+} else {
+    foreach my $name (sort(keys(%{$misc}))) {
+        print "$name (" . $misc->{$name}->count() . ")\n";
+    }
 }
 }}}
