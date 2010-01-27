@@ -67,7 +67,8 @@ sub update {
     foreach my $group (@groups) {
         foreach my $name (keys(%{$self->{$group}})) {
             $self->{$group}{$name}->setCount(0);
-            $self->{$group}{$name}->setInUse(0);
+            $self->{$group}{$name}->setInUse(0)
+                if ($self->{$group}{$name}->can('setInUse'));
         }
     }
     
@@ -140,6 +141,10 @@ sub getTypeOfItem {
         foreach my $name (keys(%{$self->{'types'}{'CraftingItem'}})) {
             next if ($self->{'types'}{'CraftingItem'}{$name}->count() == 0);
             $items{$name} = $self->{'types'}{'CraftingItem'}{$name};
+        }
+        foreach my $name (keys(%{$self->{'types'}{'Familiar'}})) {
+            next if ($self->{'types'}{'Familiar'}{$name}->count() == 0);
+            $items{$name} = $self->{'types'}{'Familiar'}{$name};
         }
     }
     
