@@ -15,6 +15,7 @@ use KoL::Item;
 use KoL::Character;
 use KoL::Terrarium;
 use KoL::Inventory;
+use KoL::Closet;
 use KoL::Wiki;
 use Data::Dumper;
 
@@ -72,7 +73,7 @@ $cli->addOption(
 );
 $cli->addOption(
     'name'          => 'character',
-    'short-name'    => 'C',
+    #'short-name'    => 'C',
     'type'          => 'boolean',
     'default'       => 0,
     'description'   => 'Test KoL::Character.'
@@ -97,6 +98,13 @@ $cli->addOption(
     'type'          => 'boolean',
     'default'       => 0,
     'description'   => 'Test KoL::Item::*.'
+);
+$cli->addOption(
+    'name'          => 'closet',
+    'short-name'    => 'C',
+    'type'          => 'boolean',
+    'default'       => 0,
+    'description'   => 'Test KoL::Closet.'
 );
 $cli->addOption(
     'name'          => 'wiki',
@@ -127,6 +135,7 @@ testItems() if ($cli->getValue('items') || $cli->getValue('test-all'));
 testCharacter() if ($cli->getValue('character') || $cli->getValue('test-all'));
 testTerrarium() if ($cli->getValue('terrarium') || $cli->getValue('test-all'));
 testInventory() if ($cli->getValue('inventory') || $cli->getValue('test-all'));
+testCloset() if ($cli->getValue('closet') || $cli->getValue('test-all'));
 testWiki() if ($cli->getValue('wiki') || $cli->getValue('test-all'));
 testStats() if ($cli->getValue('stats') || $cli->getValue('test-all'));
 
@@ -708,14 +717,122 @@ sub testInventory {
         exit(1);
     }
     
-    my $item = $inv->itemInfo(802361695);
-    if (!$item) {
-        $log->error("Unable to retrieve info for 802361695: $@");
+    foreach my $type qw(accessories booze combatItems food
+                        hats miscellaneous pants potions shirts weapons) {
+        my $x = $inv->$type();
+        if (!$x && $@) {
+            $log->error("Unable to get $type items: $@");
+            $sess->logout();
+            exit(1);
+        } elsif (!keys(%{$x})) {
+            $log->msg("You have no $type items.");
+        } else {
+            my (@list);
+            foreach my $name (sort(keys(%{$x}))) {
+                push(@list, "$name (" . $x->{$name}->count() . ")");
+            }
+            $log->msg("$type Items:\n" . join("\n", @list));
+        }
+    }
+    
+    if (!$sess->logout()) {
+        $log->error("Unable to logout '$user': $@");
+        exit(1);
+    }
+    
+    return;
+}
+
+sub testCloset {
+    $log->msg("Testing KoL::Closet");
+    my $sess = KoL::Session->new(
+        'email'         => $mail,
+    );
+    my $inv = KoL::Inventory->new('session' => $sess);
+    my $clos = KoL::Closet->new('session' => $sess);
+    
+    if (!$sess->login($user)) {
+        $log->error("Unable to login as '$user': $@");
+        exit(1);
+    }
+    
+    my $stats = $sess->stats();
+    
+    my $iItems = $inv->allItems();
+    if ($@) {
+        $log->error("Unable to get all inventory items: $@");
         $sess->logout();
         exit(1);
     }
-    print Dumper($item);
     
+    my (@items, @info);
+    foreach my $name (keys(%{$iItems})) {
+        last if (@items >= 2);
+        next if ($iItems->{$name}->count() <= 1);
+        push(@items, $iItems->{$name}) if (!@items);
+        push(@items, [$iItems->{$name}, 1]) if (@items);
+        push(@info, [$name, $iItems->{$name}->count()]);
+    }
+    
+    if ($stats->meat() < 1) {
+        $log->msg("You do not have enough meat, can not test putting meat in the closet.");
+    } else {
+        $log->msg("You have " . $stats->meat() . " meat and " .
+                    $clos->meat() . " meat in your closet.");
+        $log->msg("Testing putting 1 meat in closet.");
+        if (!$clos->putMeat(1)) {
+            $log->error("Unable to put meat in closet: $@");
+            $sess->logout();
+            exit(1);
+        }
+        $log->msg("You now have " . $stats->meat() . " meat.");
+        
+        $log->msg("Testing getting 1 meat from closet.");
+        if (!$clos->takeMeat(1)) {
+            $log->error("Unable to put meat in closet: $@");
+            $sess->logout();
+            exit(1);
+        }
+        $log->msg("You now have " . $stats->meat() . " meat.");
+    }
+    
+    if (@items != 2) {
+        $log->msg("You do not have enough items with a count greater " .
+                    "than 1 that can be placed in the closet. Unable " .
+                    "to test putting items in the closet and removing them.");
+    } else {
+        $log->msg("Testing putting items in closet.");
+        my $msg = '';
+        foreach my $item (@info) {
+            $msg .= $item->[0] . " (" . $item->[1] . ")\n";
+        }
+        $log->msg("Working with:\n$msg");
+        
+        if (!$clos->putItems(@items)) {
+            $log->error("Unable to put items in closet: $@");
+            $sess->logout();
+            exit(1);
+        }
+        
+        $log->msg("Getting updated item list from closet.");
+        my $cItems = $clos->items();
+        if ($@) {
+            $log->error("Unable to get closet inventory: $@");
+            $sess->logout();
+            exit(1);
+        }
+        
+        @items = (
+            [$cItems->{$info[0]->[0]}, $info[0]->[1]],
+            [$cItems->{$info[1]->[0]}, $info[1]->[1]],
+        );
+        $log->msg("Retrieving put items from closet.");
+        if (!$clos->takeItems(@info)) {
+            $log->error("Unable to take items from closet: $@");
+            $sess->logout();
+            exit(1);
+        }
+    }
     if (!$sess->logout()) {
         $log->error("Unable to logout '$user': $@");
         exit(1);
