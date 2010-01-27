@@ -113,6 +113,28 @@ sub update {
     return(1);
 }
 
+sub meat {
+    my $self = shift;
+    $@ = '';
+    
+    return(-1) if (!$self->update());
+    return($self->{'meat'});
+}
+
+sub items {
+    my $self = shift;
+    $@ = '';
+    
+    return(-1) if (!$self->update());
+    
+    my (%items);
+    foreach my $name (keys(%{$self->{'items'}})) {
+        next if ($self->{'items'}{$name}->count() == 0);
+        $items{$name} = $self->{'items'}{$name};
+    }
+    return(\%items);
+}
+
 sub submitForm {
     my $self = shift;
     my $action = shift;
@@ -120,7 +142,7 @@ sub submitForm {
     
     $form{'action'} = $action;
     $form{'pwd'} = $self->{'session'}->pwdhash();
-    return($self->{'session'}->post('closet.php', %form));
+    return($self->{'session'}->post('closet.php', \%form));
 }
 
 sub putMeat {
@@ -235,7 +257,7 @@ sub putItems {
         
         if ($item->{'controller'} != $self) {
             $@ = "Item for element $i is not a closet item.";
-            return(0;)
+            return(0);
         }
         
         $count = $item->count() if ($count == 0);
@@ -310,7 +332,7 @@ sub takeItems {
         
         if ($item->{'controller'} != $self) {
             $@ = "Item for element $i is not a closet item.";
-            return(0;)
+            return(0);
         }
         
         $count = $item->count() if ($count == 0);
