@@ -1,11 +1,11 @@
-#summary KoL::Item::CraftingItem module
+#summary KoL::Item::Familiar module
 #sidebar PerlTOC
 
 <wiki:toc max_depth="3" />
 
 = Introduction =
 
-This object represents a Crafting Item.
+This object represents a Familiar Hatchling Item.
 
 This object is a subclass of [PerlKoLItemUsable KoL::Item::Usable]. Please see the documentation for more details on the functionality of this object.
 

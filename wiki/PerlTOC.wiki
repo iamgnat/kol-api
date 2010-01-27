@@ -52,6 +52,8 @@
     * [PerlKoLItemEquipment#enchantments() enchantments()]
     * [PerlKoLItemEquipment#inUse() inUse()]
     * [PerlKoLItemEquipment#setInUse($val) setInUse($val)]
+  * [PerlKoLItemFamilar KoL::Item::Familiar]
+    * [PerlKoLItemFamiliar#new(%args) new(%args)]
   * [PerlKoLItemFamiliarEquipment KoL::Item::FamiliarEquipment]
     * [PerlKoLItemFamiliarEquipment#new(%args) new(%args)]
     * [PerlKoLItemFamiliarEquipment#setLocked($val) setLocked($val)]

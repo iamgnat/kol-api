@@ -15,6 +15,7 @@ The object returned is based on the "Type" from the item description. Where ther
   * [PerlKoLItemBooze KoL::Item::Booze]
   * [PerlKoLItemCombatItem KoL::Item::CombatItem]
   * [PerlKoLItemCraftingItem KoL::Item::CraftingItem]
+  * [PerlKoLItemFamiliar KoL::Item::Familiar]
   * [PerlKoLItemFamiliarEquipment KoL::Item::FamiliarEquipment]
   * [PerlKoLItemFood KoL::Item::Food]
   * [PerlKoLItemHat KoL::Item::Hat]
@@ -49,8 +50,14 @@ Either the _name_ or _descid_ element must be present. If _descid_ is present, i
 
 See the individual item types for additional elements that are relevant to their specific type.
 
+If there is an error, _undef_ is returned and _$@_ is set. The exception to this rule is if there is no object for the item type at this time. In that case, an error is written using [PerlKoLLogging#error($msg) KoL::Logging->error()] telling the user that the item type's object does not exist and it instead will use [PerlKoLItemMisc KoL::Item::Misc] as the object type instead. It also informs them that this is a bug and requests that they report it.
+
 *Example:*
 
 {{{
 my $item = KoL::Item->new('controller' => $self, 'name' => 'bottle of gin');
+if (!$item) {
+    print "Unable to create item: $@\n";
+}
+}
 }}}
