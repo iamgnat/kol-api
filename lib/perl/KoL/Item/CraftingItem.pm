@@ -8,7 +8,7 @@
 package KoL::Item::CraftingItem;
 
 use strict;
-use base qw(KoL::Item::Misc);
+use base qw(KoL::Item::Usable);
 
 sub new {
     my $class = shift;
