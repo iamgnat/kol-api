@@ -151,6 +151,64 @@ sub getTypeOfItem {
     return(\%items);
 }
 
+sub allItems {
+    my $self = shift;
+    
+    return(undef) if (!$self->update());
+    
+    my %items = {};
+    foreach my $type (qw(consumables equipment misc)) {
+        foreach my $name (keys(%{$self->{$type}})) {
+            next if ($self->{$type}{$name}->count() == 0);
+            $items{$name} = $self->{$type}{$name};
+        }
+    }
+    
+    return(\%items)
+}
+
+sub comsumables {
+    my $self = shift;
+    
+    return(undef) if (!$self->update());
+    
+    my %items = {};
+    foreach my $name (keys(%{$self->{'consumables'}})) {
+        next if ($self->{'consumables'}{$name}->count() == 0);
+        $items{$name} = $self->{'consumables'}{$name};
+    }
+    
+    return(\%items)
+}
+
+sub equipment {
+    my $self = shift;
+    
+    return(undef) if (!$self->update());
+    
+    my %items = {};
+    foreach my $name (keys(%{$self->{'equipment'}})) {
+        next if ($self->{'equipment'}{$name}->count() == 0);
+        $items{$name} = $self->{'equipment'}{$name};
+    }
+    
+    return(\%items)
+}
+
+sub misc {
+    my $self = shift;
+    
+    return(undef) if (!$self->update());
+    
+    my %items = {};
+    foreach my $name (keys(%{$self->{'misc'}})) {
+        next if ($self->{'misc'}{$name}->count() == 0);
+        $items{$name} = $self->{'misc'}{$name};
+    }
+    
+    return(\%items)
+}
+
 sub accessories {return($_[0]->getTypeOfItem('Accessory'));}
 sub booze {return($_[0]->getTypeOfItem('Booze'));}
 sub combatItems {return($_[0]->getTypeOfItem('CombatItem'));}
