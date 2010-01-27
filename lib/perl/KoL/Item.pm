@@ -10,10 +10,12 @@ package KoL::Item;
 use strict;
 use Digest::MD5;
 use KoL::Wiki;
+use KoL::Logging;
 use KoL::Item::Accessory;
 use KoL::Item::Booze;
 use KoL::Item::CombatItem;
 use KoL::Item::CraftingItem;
+use KoL::Item::Familiar;
 use KoL::Item::FamiliarEquipment;
 use KoL::Item::Food;
 use KoL::Item::Hat;
@@ -30,6 +32,8 @@ my (%_itemCache);
 sub new {
     my $class = shift;
     my %args = @_;
+    
+    my $log = KoL::Logging->new();
     
     if (!exists($args{'controller'})) {
         $@ = "'controller' not suplied in the argument hash!";
@@ -96,8 +100,19 @@ sub new {
             $word =~ /^(\S)(.*)$/;
             $mod .= uc($1) . $2;
         }
-    
-        $self = ${mod}->new(%args);
+        
+        eval {$self = ${mod}->new(%args);};
+        if ($@) {
+            if ($@ !~ m/perhaps you forgot to load/) {
+                $@ = "Unable to create item object: $@";
+                return(undef);
+            }
+            my $id = exists($args{'name'}) ? $args{'name'} : $args{'descid'};
+            $log->error("Unable to create $id as a $mod object. Creating " .
+                        "as a KoL::Item::Misc object instead. This is a bug " .
+                        "please report it ASAP.");
+            $self = KoL::Item::Misc->new(%args);
+        }
         
         if (!$self) {
             my $err = $@;
