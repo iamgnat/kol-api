@@ -156,7 +156,7 @@ sub allItems {
     
     return(undef) if (!$self->update());
     
-    my %items = {};
+    my (%items);
     foreach my $type (qw(consumables equipment misc)) {
         foreach my $name (keys(%{$self->{$type}})) {
             next if ($self->{$type}{$name}->count() == 0);
@@ -172,7 +172,7 @@ sub comsumables {
     
     return(undef) if (!$self->update());
     
-    my %items = {};
+    my (%items);
     foreach my $name (keys(%{$self->{'consumables'}})) {
         next if ($self->{'consumables'}{$name}->count() == 0);
         $items{$name} = $self->{'consumables'}{$name};
@@ -200,7 +200,7 @@ sub misc {
     
     return(undef) if (!$self->update());
     
-    my %items = {};
+    my (%items);
     foreach my $name (keys(%{$self->{'misc'}})) {
         next if ($self->{'misc'}{$name}->count() == 0);
         $items{$name} = $self->{'misc'}{$name};
