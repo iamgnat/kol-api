@@ -57,31 +57,35 @@ sub new {
         $args{'controller'}{'session'}{'log'}->debug("Found cache with.");
         $self = $_itemCache{$id}{$key};
     } else {
-        my ($descid);
+        my (%search);
         if (exists($args{'descid'})) {
-            $descid = $args{'descid'};
+            $search{'descid'} = $args{'descid'};
         } else {
-            # Translate the name to the ids.
-            my $wiki = KoL::Wiki->new('session' => $args{'controller'}{'session'});
-            my $info = $wiki->getItemIds($args{'name'});
-            if (!$info) {
-                $@ = "Unable to get wiki info for '$args{'name'}': $@";
-                return(undef);
-            }
-            $descid = $info->{'desc'};
-            $args{'descid'} = $descid;
+            $search{'name'} = $args{'name'};
         }
+        
+        # Get the name & ids from the wiki.
+        my $wiki = KoL::Wiki->new('session' => $args{'controller'}{'session'});
+        my $info = $wiki->getItemIds(%search);
+        if (!$info) {
+            $@ = "Unable to get wiki info for '" .
+                (exists($args{'name'}) ? $args{'name'} : $args{'descid'}) .
+                "': $@";
+            return(undef);
+        }
+        $args{'descid'} = $info->{'desc'};
+        $args{'id'} = $info->{'id'};
     
         # Item description
         my $resp = $args{'controller'}{'session'}->get('desc_item.php',
-                                            {'whichitem' => $descid});
+                                            {'whichitem' => $args{'descid'}});
         return(undef) if (!$resp);
     
         $args{'content'} = $resp->content();
     
         # Bad item
         if ($args{'content'} =~ m/Invalid description ID/s) {
-            $@ = "'$descid' is an invalid item ID.";
+            $@ = "'$args{'descid'}' is an invalid item ID.";
             return(undef);
         }
     

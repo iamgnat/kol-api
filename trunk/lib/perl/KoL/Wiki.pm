@@ -73,52 +73,94 @@ sub new {
 
 sub getItemIds {
     my $self = shift;
-    my $name = shift;
-    $name =~ s/\s/_/g;
+    my %info = @_;
     
-    # Check the cache
-    if (!exists($_cachedResults{$name}) ||
-        time() - $_cachedResults{$name}{'cached'} > 3600) {
-        $self->{'log'}->debug("Searching Wiki for '$name'");
+    if (exists($info{'name'})) {
+        my $name = $info{'name'};
+        $name =~ s/\s/_/g;
         
-        my $resp = $self->get("thekolwiki/index.php/$name");
-        return(undef) if (!$resp);
-        
-        # Pull the content out of the page.
-        if ($resp->content() !~ m/<!-- start content -->(.+?)<!-- end content -->/s) {
-            $self->logResponse("Unable to find content", $resp);
-            $@ = "Unable to find content!";
-            return(undef);
+        # Check the cache
+        if (!exists($_cachedResults{'name'}{$name}) ||
+            time() - $_cachedResults{'name'}{$name}{'cached'} > 3600) {
+            $self->{'log'}->debug("Searching Wiki for '$name'");
+            
+            my $resp = $self->get("thekolwiki/index.php/$name");
+            return(undef) if (!$resp);
+            
+            # Pull the content out of the page.
+            if ($resp->content() !~ m/<!-- start content -->(.+?)<!-- end content -->/s) {
+                $self->logResponse("Unable to find content", $resp);
+                $@ = "Unable to find content!";
+                return(undef);
+            }
+            my $content = $1;
+            
+            if ($content !~ m/>Item number.*?:.*? (\d+)/ &&
+                $content !~ m/>Effect number.*?:.*? (\d+)/) {
+                $self->{'log'}->debug("Page does not appear to be for an effect or item:\n" .
+                                    $content);
+                $@ = "Page does not appear to be for an effect or item!";
+                return(undef);
+            }
+            my $id = $1;
+            
+            if ($content !~ m/>Description ID.*?:.+?> (.+?)</) {
+                $self->{'log'}->debug("Unable to locate description id:\n" .
+                                    $content);
+                $@ = "Unable to locate description id!";
+                return(undef);
+            }
+            my $desc = $1;
+            
+            $_cachedResults{'name'}{$name} = {'id' => $id, 'desc' => $desc, 'cached' => time()};
+            $_cachedResults{'descid'}{$desc} = $_cachedResults{'name'}{$name};
         }
-        my $content = $1;
         
-        if ($content !~ m/>Item number.*?:.*? (\d+)/ &&
-            $content !~ m/>Effect number.*?:.*? (\d+)/) {
-            $self->{'log'}->debug("Page does not appear to be for an effect or item:\n" .
-                                $content);
-            $@ = "Page does not appear to be for an effect or item!";
-            return(undef);
+        if (exists($_cachedResults{'name'}{$name})) {
+            my %info = %{$_cachedResults{'name'}{$name}};
+            delete($info{'cached'});
+            return(\%info);
         }
-        my $id = $1;
         
-        if ($content !~ m/>Description ID.*?:.+?> (.+?)</) {
-            $self->{'log'}->debug("Unable to locate description id:\n" .
-                                $content);
-            $@ = "Unable to locate description id!";
-            return(undef);
+        $@ = "Unable to locate wiki entry for '$name'.";
+        return(undef);
+    } elsif (exists($info{'descid'})) {
+        my $descid = $info{'descid'};
+        
+        # Check the cache
+        if (!exists($_cachedResults{'descid'}{$descid}) ||
+            time() - $_cachedResults{'descid'}{$descid}{'cached'} > 3600) {
+            $self->{'log'}->debug("Searching Wiki for '$descid'");
+            
+            my $resp = $self->get("thekolwiki/index.php/Special:Search", {
+                'search'    => "descid=$descid",
+                'go'        => 'Go'
+            });
+            return(undef) if (!$resp);
+            
+            # Pull the content out of the page.
+            if ($resp->content() !~ m/<ul class='mw-search-results'>(.+?)<\/ul>/s) {
+                $self->logResponse("Unable to find search results", $resp);
+                $@ = "Unable to find search results!";
+                return(undef);
+            }
+            my $content = $1;
+            
+            if ($content !~ m/<a href.+? title="(.+?)".+?descid.+?=.+?$descid</s) {
+                $self->logResponse("Unable to find matching search results", $resp);
+                $@ = "Unable to find matching search results!";
+                return(undef);
+            }
+            
+            # Recursively call with the name.
+            return($self->getItemIds('name' => $1));
         }
-        my $desc = $1;
         
-        $_cachedResults{$name} = {'id' => $id, 'desc' => $desc, 'cached' => time()};
+        $@ = "Unable to locate wiki entry for '$descid'.";
+        return(undef);
     }
     
-    if (exists($_cachedResults{$name})) {
-        my %info = %{$_cachedResults{$name}};
-        delete($info{'cached'});
-        return(\%info);
-    }
-    
-    $@ = "Unable to location '$name'.";
+    $@ = "Unable to locate item. No name or descid supplied.";
     return(undef);
 }
 
