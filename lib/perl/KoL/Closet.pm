@@ -255,8 +255,8 @@ sub putItems {
             return(0);
         }
         
-        if ($item->{'controller'} != $self) {
-            $@ = "Item for element $i is not a closet item.";
+        if ($item->{'controller'} == $self) {
+            $@ = "Item for element $i is a closet item.";
             return(0);
         }
         
@@ -267,6 +267,8 @@ sub putItems {
         $form{'whichitem' . ($i + 1)} = $item->id();
         push(@checks, $item->name());
     }
+    use Data::Dumper;
+    print "Put items form:\n" . Dumper(%form);
     
     my $resp = $self->submitForm('put', %form);
     return(0) if (!$resp);
@@ -278,11 +280,12 @@ sub putItems {
     $@ = '';
     my (@err);
     foreach my $item (@checks) {
-        if ($resp->content() !~ m/<b>$item \(.+?\) moved from inventory to closet/s) {
+        if ($resp->content() !~ m/$item.+? moved from inventory to closet/s) {
             push(@err, $item);
         }
     }
     if (@err) {
+        $self->{'session'}->logResponse("Items not put in closet!", $resp);
         $@ = "The following items were not put into the closet: " .
                 join(', ', @err);
         return(0);
