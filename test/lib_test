@@ -769,8 +769,8 @@ sub testCloset {
     foreach my $name (keys(%{$iItems})) {
         last if (@items >= 2);
         next if ($iItems->{$name}->count() <= 1);
-        push(@items, $iItems->{$name}) if (!@items);
         push(@items, [$iItems->{$name}, 1]) if (@items);
+        push(@items, $iItems->{$name}) if (!@items);
         push(@info, [$name, $iItems->{$name}->count()]);
     }
     
