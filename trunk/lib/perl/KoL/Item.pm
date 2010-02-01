@@ -21,6 +21,7 @@ use KoL::Item::Food;
 use KoL::Item::Hat;
 use KoL::Item::Misc;
 use KoL::Item::OffHandItem;
+use KoL::Item::OffHandItemShield;
 use KoL::Item::Pants;
 use KoL::Item::Potion;
 use KoL::Item::Shirt;
