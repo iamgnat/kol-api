@@ -101,6 +101,7 @@ sub update {
             } else {
                 $item = KoL::Item->new('controller' => $self, 'descid' => $descid);
                 return(0) if (!$item);
+                $self->{'items'}{$item->id()} = $item;
             }
             
             $item->setCount($count);
@@ -128,9 +129,9 @@ sub items {
     return(-1) if (!$self->update());
     
     my (%items);
-    foreach my $name (keys(%{$self->{'items'}})) {
-        next if ($self->{'items'}{$name}->count() == 0);
-        $items{$name} = $self->{'items'}{$name};
+    foreach my $id (keys(%{$self->{'items'}})) {
+        next if ($self->{'items'}{$id}->count() == 0);
+        $items{$self->{'items'}{$id}->name()} = $self->{'items'}{$id};
     }
     return(\%items);
 }
@@ -267,8 +268,6 @@ sub putItems {
         $form{'whichitem' . ($i + 1)} = $item->id();
         push(@checks, $item->name());
     }
-    use Data::Dumper;
-    print "Put items form:\n" . Dumper(%form);
     
     my $resp = $self->submitForm('put', %form);
     return(0) if (!$resp);
@@ -356,12 +355,14 @@ sub takeItems {
     $@ = '';
     my (@err);
     foreach my $item (@checks) {
-        if ($resp->content() !~ m/<b>$item \(.+?\) moved from closet to inventory/s) {
+        if ($resp->content() !~ m/<b>$item \(.+?\).+?moved from closet to inventory/s) {
             push(@err, $item);
         }
     }
     if (@err) {
-        $@ = "The following items were not put into the closet: " .
+        $self->{'session'}->logResponse("The following items were not taken from the closet: " .
+                                            join(', ', @err), $resp);
+        $@ = "The following items were not taken from the closet: " .
                 join(', ', @err);
         return(0);
     }
