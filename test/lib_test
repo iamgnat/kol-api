@@ -822,12 +822,16 @@ sub testCloset {
             exit(1);
         }
         
+        $log->msg("Closet now contains:");
+        foreach my $name (keys(%{$cItems})) {
+            $log->msg("    $name (" . $cItems->{$name}->count() . ")");
+        }
         @items = (
-            [$cItems->{$info[0]->[0]}, $info[0]->[1]],
+            $cItems->{$info[0]->[0]},
             [$cItems->{$info[1]->[0]}, $info[1]->[1]],
         );
         $log->msg("Retrieving put items from closet.");
-        if (!$clos->takeItems(@info)) {
+        if (!$clos->takeItems(@items)) {
             $log->error("Unable to take items from closet: $@");
             $sess->logout();
             exit(1);
