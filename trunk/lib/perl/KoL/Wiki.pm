@@ -95,7 +95,7 @@ sub getItemIds {
             }
             my $content = $1;
             
-            if ($content !~ m/>Item number.*?:.*? (\d+)/ &&
+            if ($content !~ m/>Item number.*?:.*? ([\-\d]+)/ &&
                 $content !~ m/>Effect number.*?:.*? (\d+)/) {
                 $self->{'log'}->debug("Page does not appear to be for an effect or item:\n" .
                                     $content);
@@ -122,7 +122,7 @@ sub getItemIds {
             return(\%info);
         }
         
-        $@ = "Unable to locate wiki entry for '$name'.";
+        $@ = "Unable to locate wiki entry for '$name' (name).";
         return(undef);
     } elsif (exists($info{'descid'})) {
         my $descid = $info{'descid'};
@@ -156,7 +156,13 @@ sub getItemIds {
             return($self->getItemIds('name' => $1));
         }
         
-        $@ = "Unable to locate wiki entry for '$descid'.";
+        if (exists($_cachedResults{'descid'}{$descid})) {
+            my %info = %{$_cachedResults{'descid'}{$descid}};
+            delete($info{'cached'});
+            return(\%info);
+        }
+        
+        $@ = "Unable to locate wiki entry for '$descid' (descid).";
         return(undef);
     }
     
