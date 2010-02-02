@@ -1,5 +1,4 @@
 #summary KoL::Inventory module
-#labels TODO
 #sidebar PerlTOC
 
 <wiki:toc max_depth="3" />
