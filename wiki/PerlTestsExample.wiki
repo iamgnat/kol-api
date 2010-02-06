@@ -1,4 +1,4 @@
-#summary test/example.pl script
+#summary tests/example.pl script
 #sidebar PerlTOC
 
 <wiki:toc max_depth="3" />
@@ -12,7 +12,8 @@ This example prints the given characters stats and it's current familiar (if the
 {{{./example.pl -u iamgnat -e not@me.com}}}
 
 *Output:*
-{{{Enter password for 'iamgnat': 
+{{{
+Enter password for 'iamgnat': 
 2010/02/06 14:37:01 Current Stats:
     Level: 22
     Title: Disco Bandit
@@ -26,4 +27,5 @@ This example prints the given characters stats and it's current familiar (if the
     MP: 333/333
     Effects:
 	Hot Blooded (3413)
-2010/02/06 14:38:32 Your current familiar is Trorg the 20lb MagiMechTech MicroMechaMech equipped with a targeting chip.}}}
+2010/02/06 14:38:32 Your current familiar is Trorg the 20lb MagiMechTech MicroMechaMech equipped with a targeting chip.
+}}}

@@ -1,4 +1,4 @@
-#summary test/lib_test script
+#summary tests/lib_test script
 #sidebar PerlTOC
 
 <wiki:toc max_depth="3" />
