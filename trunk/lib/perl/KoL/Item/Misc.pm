@@ -8,6 +8,7 @@
 package KoL::Item::Misc;
 
 use strict;
+use KoL;
 
 sub new {
     my $class = shift;
@@ -122,6 +123,60 @@ sub setCount {
     $self->{'count'} = $val;
     
     return;
+}
+
+sub sell {
+    my $self = shift;
+    my $count = shift || 1;
+    
+    if (ref($self->{'controller'}) ne 'KoL::Inventory') {
+        $@ = "Only inventory items may be sold.";
+        return(0);
+    }
+    
+    if (!$self->{'tradable'} || $self->{'quest'}) {
+        $@ = "You may not sell this item.";
+        return(0);
+    }
+    
+    if ($count !~ m/^\d+$/) {
+        $@ = "'$count' is not a valid count.";
+        return(0);
+    }
+    
+    if ($count <= 0) {
+        $@ = "You have successfully sold zero items.. Really?";
+        return(0);
+    }
+    
+    # Use the method rather than a direct check to force an update if needed.
+    if ($count > $self->count()) {
+        $@ = "You may not sell more than you have.";
+        return(0);
+    }
+    
+    my $sess = $self->{'controller'}{'session'};
+    my $form = {
+        'pwd'           => $sess->pwdhash(),
+        'action'        => 'sell',
+        'whichitem[]'   => $self->{'id'},
+        'type'          => 'quant',
+        'howmany'       => $count,
+    };
+    
+    my $resp = $sess->post('sellstuff.php', $form);
+    KoL::makeDirty();
+    return(0) if (!$resp);
+    
+    if ($resp->content() !~ m/You sell your.+?<td valign=center>You gain ([\d,]+) Meat/s) {
+        $sess->logResponse("Unable to sell " . $self->{'name'} . ".", $resp);
+        $@ = "Unable to sell item.";
+        return(0);
+    }
+    my $meat = $1;
+    $meat =~ s/,//g;
+    
+    return($meat);
 }
 
 1;
