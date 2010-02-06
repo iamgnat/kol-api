@@ -465,7 +465,7 @@ sub testTerrarium {
     my $sess = KoL::Session->new(
         'email'         => $mail,
     );
-    my $ter = KoL::Familiars->new('session' => $sess);
+    my $ter = KoL::Terrarium->new('session' => $sess);
     
     if (!$sess->login($user)) {
         $log->error("Unable to login as '$user': $@");
