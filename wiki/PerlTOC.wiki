@@ -186,4 +186,5 @@
     * [PerlKoLWiki#logResponse($msg,_$resp,_$level) logResponse($msg, $resp, $level)]
 
 *Other files*
-  * [PerlLibtest libtest]
+  * [PerlTestsExample tests/example.pl]
+  * [PerlTestsLibTest tests/lib_test]
