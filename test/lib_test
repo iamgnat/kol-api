@@ -735,6 +735,26 @@ sub testInventory {
         }
     }
     
+    $log->msg("Testing selling items");
+    my $items = $inv->allItems();
+    foreach my $name (keys(%{$items})) {
+        next if (!grep(/^\Q$name\E$/,
+                    ("white snake skin", "white sword",
+                    "white satin pants", "catgut")));
+        
+        my $count = int($items->{$name}->count() / 2) || 1;
+        $log->msg("Selling $count out of " . $items->{$name}->count() . " of $name");
+        my $meat = $items->{$name}->sell($count);
+        if (!$meat) {
+            $log->error("Unable to sell item ($sold != $count): $@");
+            $sess->logout();
+            exit(1);
+        }
+        $log->msg("Sold $count for $meat meat.");
+        $log->msg("We now have " . $items->{$name}->count() . " left.");
+        last;
+    }
+    
     if (!$sess->logout()) {
         $log->error("Unable to logout '$user': $@");
         exit(1);
