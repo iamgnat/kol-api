@@ -96,3 +96,26 @@ Returns the level required to use the item or 0.
 
 ===setCount($val)===
 This allows you to set the current instance count. This is only intended to be used by the _controller's_ _update()_ method.
+
+===sell($count)===
+Attempts to sell _$count_ of the item. If _$count_ is not given, it defaults to 1.
+
+This may only be called from items in your [PerlKoLInventory KoL::Inventory].
+
+The result on success is the amount of meat the items sold for. If there is an error, 0 is returned and _$@_ is set.
+
+*Example:*
+{{{
+my $name = "white satin pants";
+my $items = $inv->allItems();
+my $count = int($items->{$name}->count() / 2) || 1;
+$log->msg("Selling $count out of " . $items->{$name}->count() . " of $name");
+my $meat = $items->{$name}->sell($count);
+if (!$meat) {
+    $log->error("Unable to sell item ($sold != $count): $@");
+    $sess->logout();
+    exit(1);
+}
+$log->msg("Sold $count for $meat meat.");
+$log->msg("We now have " . $items->{$name}->count() . " left.");
+}}}

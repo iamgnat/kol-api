@@ -103,6 +103,7 @@
     * [PerlKoLItemMisc#moxieRequired() moxieRequired()]
     * [PerlKoLItemMisc#levelRequired() levelRequired()]
     * [PerlKoLItemMisc#setCount($val) setCount($val)]
+    * [PerlKoLItemMisc#sell($count) sell($count)]
   * [PerlKoLItemOffHandItem KoL::Item::OffHandItem]
     * [PerlKoLItemOffHandItem#new(%args) new(%args)]
   * [PerlKoLItemPants KoL::Item::Pants]
