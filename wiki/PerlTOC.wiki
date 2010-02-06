@@ -59,7 +59,7 @@
     * [PerlKoLInventory#miscellaneous() miscellaneous()]
   * [PerlKoLItem KoL::Item]
     * [PerlKoLItem#new(%args) new(%args)]
-  * KoL::Item::* (specific item types)
+  * KoL::Item::`*` (specific item types)
     * [PerlKoLItemAccessory KoL::Item::Accessory]
       * [PerlKoLItemAccessory#new(%args) new(%args)]
     * [PerlKoLItemBooze KoL::Item::Booze]
