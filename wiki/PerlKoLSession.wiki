@@ -27,6 +27,49 @@ The argument is a hash that can contain the following information:
 my $sess = KoL::Session->new('email' => 'my@email.com', 'timeout' => 30);
 }}}
 
+===dirty()===
+The _dirty()_, _makeDirty()_, and _time()_ methods provide modules a way to notify each other that they should update any cached information as a change has been made. These methods use _Time::HiRes_ for their time representations for more accurate checks.
+
+The _dirty()_ method returns the last time that the _makeDirty()_ was called. Modules can use this result against their own saved UTC time to know if their last cache was before or after a known change to the character/environment information.
+
+There are no arguments for this method.
+
+*Example:*
+{{{
+if ($sess->dirty() > $myCachetime) {
+    # Update cached information
+}
+# ...
+}}}
+
+===makeDirty()===
+The _dirty()_, _makeDirty()_, and _time()_ methods provide modules a way to notify each other that they should update any cached information as a change has been made. These methods use _Time::HiRes_ for their time representations for more accurate checks.
+
+The _makeDirty()_ method sets a value in the object to the current time. This value is then returned by a call to _dirty()_. Call this method when your module has made a change to the KoL environment (e.g. sold an item, changed familiars, etc..) to let the rest of the modules know that they should invalidate their cache and re-fetch their information.
+
+There are no arguments for this method.
+
+*Example:*
+{{{
+# Perform some action to change character information (e.g. sell an item)
+$myCacheTime = $sess->time();
+$sess->makeDirty();
+}}}
+
+===time()===
+The _dirty()_, _makeDirty()_, and _time()_ methods provide modules a way to notify each other that they should update any cached information as a change has been made. These methods use _Time::HiRes_ for their time representations for more accurate checks.
+
+This is a utility method so you don't have to work with _Time::HiRes_ yourself if you don't want to. Simply call this to get the current time that is compatible with checking against _dirty()_ to see if something has changed since your last check.
+
+There are no arguments for this method.
+
+*Example:*
+{{{
+# Perform some action to change character information (e.g. sell an item)
+$myCacheTime = $sess->time();
+$sess->makeDirty();
+}}}
+
 ===loggedIn()===
 Returns 1|0 if the session is currently logged in.
 
