@@ -45,7 +45,7 @@ sub dirty {
     my $self = shift;
     
     $self->{'log'}->debug("Checking dirtiness against " . $self->{'dirty'});
-    return($self->{'kol'}->dirty() > $self->{'dirty'});
+    return($self->{'session'}->dirty() > $self->{'dirty'});
 }
 
 sub update {
@@ -239,7 +239,7 @@ sub update {
     }
     
     # Mark the update time so we know when we need to update again.
-    $self->{'dirty'} = $self->{'kol'}->time();
+    $self->{'dirty'} = $self->{'session'}->time();
     
     return(1);
 }
@@ -317,7 +317,7 @@ sub changeName {
     
     # Make it dirty now just incase the change really worked by we
     #   don't know it for some reason.
-    $self->{'kol'}->makeDirty();
+    $self->{'session'}->makeDirty();
     
     if ($resp->content() !~ m/Results:.*?<table><tr><td>(.+?)</s) {
         $self->{'session'}->logResponse("Unable to get results", $resp);
@@ -372,7 +372,7 @@ sub unequip {
     
     # Make it dirty now just incase the change really worked by we
     #   don't know it for some reason.
-    $self->{'kol'}->makeDirty();
+    $self->{'session'}->makeDirty();
     
     if ($resp->content() =~ m/You either don't have a familiar of that type/ ||
         $resp->content() =~ m/You don't seem to have anything in that slot/) {
@@ -434,7 +434,7 @@ sub equip {
     
     # Make it dirty now just incase the change really worked by we
     #   don't know it for some reason.
-    $self->{'kol'}->makeDirty();
+    $self->{'session'}->makeDirty();
     
     if ($resp->content() =~ m/Only a specific familiar type/) {
         $@ = "Equipment invalid for this familiar.";
@@ -495,7 +495,7 @@ sub lock {
     
     # Make it dirty now just incase the change really worked by we
     #   don't know it for some reason.
-    $self->{'kol'}->makeDirty();
+    $self->{'session'}->makeDirty();
     
     if ($resp->content() =~ m/equipped by one kind of familiar\. Strange, but true/) {
         $@ = "You can not lock familiar specific equipment.";
@@ -536,7 +536,7 @@ sub takeThisOne {
     
     # Make it dirty now just incase the change really worked by we
     #   don't know it for some reason.
-    $self->{'kol'}->makeDirty();
+    $self->{'session'}->makeDirty();
     
     if ($resp->content() !~ m/You take .+? with you/) {
         $self->{'session'}->logResponse("Unable to take familiar:", $resp);
@@ -569,7 +569,7 @@ sub putAway {
     
     # Make it dirty now just incase the change really worked by we
     #   don't know it for some reason.
-    $self->{'kol'}->makeDirty();
+    $self->{'session'}->makeDirty();
     
     if ($resp->content() !~ m/You put .+? back in the Terrarium/) {
         $self->{'session'}->logResponse("Unable to put away familiar:", $resp);

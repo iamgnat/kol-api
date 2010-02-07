@@ -43,7 +43,7 @@ sub dirty {
     my $self = shift;
     
     $self->{'log'}->debug("Checking dirtiness against " . $self->{'dirty'});
-    return($self->{'kol'}->dirty() > $self->{'dirty'});
+    return($self->{'session'}->dirty() > $self->{'dirty'});
 }
 
 sub update {
@@ -109,7 +109,7 @@ sub update {
     }
     
     # Mark the update time so we know when we need to update again.
-    $self->{'dirty'} = $self->{'kol'}->time();
+    $self->{'dirty'} = $self->{'session'}->time();
     
     return(1);
 }
@@ -162,7 +162,7 @@ sub putMeat {
     
     # Make it dirty now just incase the change really worked but we
     #   don't know it for some reason.
-    $self->{'kol'}->makeDirty();
+    $self->{'session'}->makeDirty();
     
     if ($resp->content() !~ m/You put ([\d,]+) Meat in your closet/) {
         $self->{'session'}->logResponse("Meat apparently not added.", $resp);
@@ -199,7 +199,7 @@ sub takeMeat {
     
     # Make it dirty now just incase the change really worked but we
     #   don't know it for some reason.
-    $self->{'kol'}->makeDirty();
+    $self->{'session'}->makeDirty();
     
     if ($resp->content() !~ m/You take ([\d,]+) Meat out of your closet/) {
         $self->{'session'}->logResponse("Meat apparently not removed.", $resp);
@@ -274,7 +274,7 @@ sub putItems {
     
     # Make it dirty now just incase the change really worked but we
     #   don't know it for some reason.
-    $self->{'kol'}->makeDirty();
+    $self->{'session'}->makeDirty();
     
     $@ = '';
     my (@err);
@@ -350,7 +350,7 @@ sub takeItems {
     
     # Make it dirty now just incase the change really worked but we
     #   don't know it for some reason.
-    $self->{'kol'}->makeDirty();
+    $self->{'session'}->makeDirty();
     
     $@ = '';
     my (@err);
