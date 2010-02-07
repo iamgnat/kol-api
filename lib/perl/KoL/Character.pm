@@ -43,7 +43,7 @@ sub new {
 sub dirty {
     my $self = shift;
     
-    return($self->{'kol'}->dirty() > $self->{'dirty'});
+    return($self->{'session'}->dirty() > $self->{'dirty'});
 }
 
 sub update {

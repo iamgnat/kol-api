@@ -12,6 +12,7 @@ use LWP;
 use LWP::UserAgent;
 use Digest::MD5;
 use URI::Escape;
+use Time::HiRes;
 use KoL;
 use KoL::Stats;
 use KoL::Logging;
@@ -52,6 +53,7 @@ sub new {
         },
         'last_resp'     => undef,
         'stats'         => undef,
+        'dirty'         => Time::HiRes::time(),
     };
     
     bless($self, $class);
@@ -67,6 +69,28 @@ sub new {
     );
     
     return($self);
+}
+
+sub dirty {
+    my $self = shift;
+    
+    return($self->{'dirty'});
+}
+
+sub time {
+    return(Time::HiRes::time());
+}
+
+sub makeDirty {
+    my $self = shift;
+    
+    # Standard seconds weren't good enough. Sleep for 100th of a
+    #   second (or smallest amount for the platform) so we know
+    #   there will be a difference when comparing against it.
+    $self->{'dirty'} = $self->time();
+    Time::HiRes::sleep(0.01);
+    
+    return;
 }
 
 sub loggedIn {
@@ -197,7 +221,7 @@ sub login {
     }
     $self->{'pwdhash'} = $1;
     
-    $self->{'kol'}->makeDirty();
+    $self->makeDirty();
     
     $self->{'stats'} = KoL::Stats->new('session' => $self);
     $self->{'stats'}->update($resp);
@@ -217,7 +241,7 @@ sub logout {
         return(0);
     }
     
-    $self->{'kol'}->makeDirty();
+    $self->makeDirty();
     
     $self->{'sessionid'} = undef;
     $self->{'user'} = undef;

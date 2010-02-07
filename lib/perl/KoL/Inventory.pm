@@ -47,7 +47,7 @@ sub new {
 sub dirty {
     my $self = shift;
     
-    return($self->{'kol'}->dirty() > $self->{'dirty'});
+    return($self->{'session'}->dirty() > $self->{'dirty'});
 }
 
 sub update {
@@ -152,7 +152,7 @@ sub update {
     }
     
     # Mark the update time so we know when we need to update again.
-    $self->{'dirty'} = $self->{'kol'}->time();
+    $self->{'dirty'} = $self->{'session'}->time();
     
     return(1);
 }
