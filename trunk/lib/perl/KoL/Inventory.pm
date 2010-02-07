@@ -34,6 +34,7 @@ sub new {
         'dirty'         => 0,
         'consumables'   => {},
         'equipment'     => {},
+        'equipped'      => {},
         'misc'          => {},
         'types'         => {},
     };
@@ -72,7 +73,7 @@ sub update {
         }
     }
     
-    
+    # Gather the data.
     for (my $i = 0 ; $i < @groups ; ) {
         my $group = $groups[$i];
         $i++;
@@ -82,7 +83,7 @@ sub update {
         return (0) if (!$resp);
         
         my $content = $resp->content();
-        while ($content =~ m/<img .+?'descitem\((.+?),.+?\).+?<b class="ircm">(.+?)<.+?<span(.+?)><font size=1>/sg) {
+        while ($content =~ m/<img.+?class="hand ircm".+?descitem\((.+?),.+?\).+?<b class="ircm">(.+?)<.+?<span(.+?)><font size=1>/sg) {
             my $descid = $1;
             my $name = $2;
             my $span = $3;
@@ -110,6 +111,42 @@ sub update {
                 $item->setCount($count);
                 $self->{$group}{$item->name()} = $item;
                 $self->{'types'}{$type}{$item->name()} = $item;
+            }
+        }
+        
+        # Handle equiped items.
+        if ($group eq 'equipment' && $content =~ m/<table id='curequip'.+?>(.+?)<\/table>/s) {
+            my $curr = $1;
+            
+            $log->debug("Processing equipped items.");
+            foreach my $sec (('Hat', 'Shirt', 'Pants', 'Weapon', 'Off-Hand', 'Accessory')) {
+                $log->debug("Looking for equipped $sec.");
+                while ($curr =~ m/<a class=nounder href="#.+?">$sec<\/a>.+?<\/td><td><img.+?class=hand onClick='descitem\((.+?),0, event\)';><\/td><td><b>(.+?)<\/b>/gs) {
+                    my $descid = $1;
+                    my $name = $2;
+            
+                    $log->debug("Adding equipped '$name' to inventory.");
+                    if (exists($self->{$group}{$name})) {
+                        $self->{$group}{$name}->setCount($self->{$group}{$name}->count() + 1);
+                        $self->{$group}{$name}->setInUse($self->{$group}{$name}->inUse() + 1);
+                    } else {
+                        my $item = KoL::Item->new('controller' => $self, 'descid' => $descid);
+                        return(0) if (!$item);
+                
+                        my $type = ref($item);
+                        $type =~ s/^KoL::Item:://;
+                
+                        # Don't handle Familiar Equipment, make them use the
+                        #   Tererrarium for that.
+                        next if ($type eq 'FamiliarEquipment');
+                
+                        $item->setCount(1);
+                        $item->setInUse(1);
+                        $self->{'equipment'}{$item->name()} = $item;
+                        $self->{'types'}{$type}{$item->name()} = $item;
+                        $self->{'equipped'}{$item->name()} = $item;
+                    }
+                }
             }
         }
     }
@@ -164,7 +201,22 @@ sub allItems {
         }
     }
     
-    return(\%items)
+    return(\%items);
+}
+
+sub equipped {
+    my $self = shift;
+    
+    return(undef) if (!$self->update());
+    
+    my (%items);
+    foreach my $name (keys(%{$self->{'equipped'}})) {
+        next if ($self->{'equipped'}{$name}->count() == 0);
+        next if ($self->{'equipped'}{$name}->inUse() == 0);
+        $items{$name} = $self->{'equipped'}{$name};
+    }
+    
+    return(\%items);
 }
 
 sub comsumables {
