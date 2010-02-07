@@ -37,6 +37,23 @@ if ($@) {
 }
 }}}
 
+===equipped()===
+Returns a hash reference containing all the items that you currently have equipped. The key to the hash is the name of the item. If there are no equipped items, an empty hash reference is returned.
+
+In the event of an error, _undef_ is returned and _$@_ is set.
+
+*Example:*
+{{{
+my $equip = $inv->equipped();
+if ($@) {
+    print "Unable to get equipped items: $@\n";
+} else {
+    foreach my $name (sort(keys(%{$equip}))) {
+        print "$name (" . $equip->{$name}->count() . ")\n";
+    }
+}
+}}}
+
 ===consumables()===
 Returns a hash reference containing all the items from the 'consumables' tab of the character's inventory. The key to the hash is the name of the item. If no items are present in your inventory, an empty hash reference is returned.
 

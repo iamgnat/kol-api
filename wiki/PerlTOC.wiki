@@ -43,6 +43,7 @@
   * [PerlKoLInventory KoL::Inventory]
     * [PerlKoLInventory#new(%args) new(%args)]
     * [PerlKoLInventory#allItems() allItems()]
+    * [PerlKoLInventory#equipped() equipped()]
     * [PerlKoLInventory#consumables() consumables()]
     * [PerlKoLInventory#equipment() equipment()]
     * [PerlKoLInventory#misc() misc()]
