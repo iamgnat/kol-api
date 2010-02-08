@@ -266,8 +266,8 @@ sub _processResponse {
     $self->{'last_resp'} = $resp;
     
     # Simple record keeping to cut down on DoS like usage.
-    if ($self->{'no_dos'}{'second'} != time()) {
-        $self->{'no_dos'}{'second'} = time();
+    if ($self->{'no_dos'}{'second'} != CORE::time()) {
+        $self->{'no_dos'}{'second'} = CORE::time();
         $self->{'no_dos'}{'count'} = 0
     }
     $self->{'no_dos'}{'count'}++;
@@ -339,7 +339,7 @@ sub request {
     }
     
     # Place nice and try not to DoS KoL.
-    sleep(1) if (time() - $self->{'no_dos'}{'second'} < 1 &&
+    sleep(1) if (CORE::time() - $self->{'no_dos'}{'second'} < 1 &&
                     $self->{'no_dos'}{'count'} >= 30);
     
     my $url = 'http://' . $self->{'server'} . "/$uri";
