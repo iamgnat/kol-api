@@ -16,6 +16,7 @@ use KoL::Character;
 use KoL::Terrarium;
 use KoL::Inventory;
 use KoL::Closet;
+use KoL::Outfits;
 use KoL::Wiki;
 use Data::Dumper;
 
@@ -114,6 +115,13 @@ $cli->addOption(
     'description'   => 'Test KoL::Wiki.'
 );
 $cli->addOption(
+    'name'          => 'outfits',
+    'short-name'    => 'o',
+    'type'          => 'boolean',
+    'default'       => 0,
+    'description'   => 'Test KoL::Outfits.'
+);
+$cli->addOption(
     'name'          => 'test-all',
     'short-name'    => 'a',
     'type'          => 'boolean',
@@ -136,6 +144,7 @@ testCharacter() if ($cli->getValue('character') || $cli->getValue('test-all'));
 testTerrarium() if ($cli->getValue('terrarium') || $cli->getValue('test-all'));
 testInventory() if ($cli->getValue('inventory') || $cli->getValue('test-all'));
 testCloset() if ($cli->getValue('closet') || $cli->getValue('test-all'));
+testOutfits() if ($cli->getValue('outfits') || $cli->getValue('test-all'));
 testWiki() if ($cli->getValue('wiki') || $cli->getValue('test-all'));
 testStats() if ($cli->getValue('stats') || $cli->getValue('test-all'));
 
@@ -735,6 +744,22 @@ sub testInventory {
         }
     }
     
+    my $equip = $inv->equipped();
+    if ($@) {
+        $log->error("Unable to get equipped items: $@");
+        $sess->logout();
+        exit(1);
+    }
+    if (!%{$equip}) {
+        $log->msg("You have no equipped items.");
+    } else {
+        my $items = '';
+        foreach my $name (sort(keys(%{$equip}))) {
+            $items .= "\n" . $equip->{$name}->inUse() . " $name";
+        }
+        $log->msg("You have the following currently equipped:$items");
+    }
+    
     $log->msg("Testing selling items");
     my $items = $inv->allItems();
     foreach my $name (keys(%{$items})) {
@@ -857,6 +882,93 @@ sub testCloset {
             exit(1);
         }
     }
+    if (!$sess->logout()) {
+        $log->error("Unable to logout '$user': $@");
+        exit(1);
+    }
+    
+    return;
+}
+
+sub testOutfits {
+    $log->msg("Testing KoL::Outfits");
+    my $sess = KoL::Session->new(
+        'email'         => $mail,
+    );
+    my $out = KoL::Outfits->new('session' => $sess);
+    
+    if (!$sess->login($user)) {
+        $log->error("Unable to login as '$user': $@");
+        exit(1);
+    }
+    
+    my $norm = $out->normal();
+    if ($@) {
+        $log->error("Unable to get normal outfits: $@");
+        $sess->logout();
+        exit(1);
+    }
+    if (!$norm) {
+        $log->msg("You do not have any normal outfits.");
+    } else {
+        $log->msg("You have the following normal outfits:\n" .
+                    join("\n", @{$norm}));
+    }
+    
+    my $cust = $out->custom();
+    if ($@) {
+        $log->error("Unable to get custom outfits: $@");
+        $sess->logout();
+        exit(1);
+    }
+    if (!$cust) {
+        $log->msg("You do not have any custom outfits.");
+    } else {
+        $log->msg("You have the following custom outfits:\n" .
+                    join("\n", @{$cust}));
+    }
+    
+    $log->msg("Saving outfit as 'KoLAPI Outfit'.");
+    if (!$out->saveOutfit('KoLAPI Outfit')) {
+        $log->error("Unable to save outfit: $@");
+        $sess->logout();
+        exit(1);
+    }
+    
+    $log->msg("Switching to previous outfit.");
+    if (!$out->wearCustom('KoLAPI Outfit')) {
+        $log->error("Unable to switch to previous outfit: $@");
+        $sess->logout();
+        exit(1);
+    }
+    
+    $log->msg("Switching to 'KoLAPI Outfit'.");
+    if (!$out->wearPrevious()) {
+        $log->error("Unable to switch to 'KoLAPI Outfit': $@");
+        $sess->logout();
+        exit(1);
+    }
+    
+    $cust = $out->custom();
+    if ($@) {
+        $log->error("Unable to get custom outfits: $@");
+        $sess->logout();
+        exit(1);
+    }
+    if (!$cust) {
+        $log->msg("You do not have any custom outfits.");
+    } else {
+        $log->msg("You have the following custom outfits:\n" .
+                    join("\n", @{$cust}));
+    }
+    
+    $log->msg("Deleting outfit as 'KoLAPI Outfit'.");
+    if (!$out->deleteOutfit('KoLAPI Outfit')) {
+        $log->error("Unable to delete outfit: $@");
+        $sess->logout();
+        exit(1);
+    }
+    
     if (!$sess->logout()) {
         $log->error("Unable to logout '$user': $@");
         exit(1);
