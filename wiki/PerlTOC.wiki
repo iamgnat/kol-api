@@ -140,6 +140,7 @@
     * [PerlKoLOutfits#wearNormal($name) wearNormal($name)]
     * [PerlKoLOutfits#wearCustom($name) wearCustom($name)]
     * [PerlKoLOutfits#wearPrevious() wearPrevious()]
+    * [PerlKoLOutfits#unequipAll() unequipAll()]
     * [PerlKoLOutfits#changeName($old,_$new) changeName($old, $new)]
     * [PerlKoLOutfits#deleteOutfit($name) deleteOutfit($name)]
   * [PerlKoLSession KoL::Session]

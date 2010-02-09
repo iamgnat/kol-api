@@ -94,6 +94,19 @@ if (!$out->wearPrevious()) {
 }
 }}}
 
+===unequipAll()===
+Unequips everything.
+
+Returns 1 on success or 0 on error and sets _$@_.
+
+*Example:*
+{{{
+if (!$out->unequipAll()) {
+    print "Unable to go naked, which is probably a good thing...: $@\n";
+    exit(1);
+}
+}}}
+
 ===changeName($old, $new)===
 Changes the name of _$old_ outfit to _$new_.
 
