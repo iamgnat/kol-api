@@ -142,8 +142,6 @@
     * [PerlKoLOutfits#wearPrevious() wearPrevious()]
     * [PerlKoLOutfits#changeName($old,_$new) changeName($old, $new)]
     * [PerlKoLOutfits#deleteOutfit($name) deleteOutfit($name)]
-    ===changeName($old, $new)===
-    ===deleteOutfit($name)===
   * [PerlKoLSession KoL::Session]
     * [PerlKoLSession#new(%args) new(%args)]
     * [PerlKoLSession#sessionID() sessionID()]
