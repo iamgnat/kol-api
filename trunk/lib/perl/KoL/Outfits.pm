@@ -188,6 +188,30 @@ sub wearNormal {return($_[0]->wear('normal', $_[1]));}
 sub wearCustom {return($_[0]->wear('custom', $_[1]));}
 sub wearPrevious {return($_[0]->wear('previous'));}
 
+sub unequipAll {
+    my $self = shift;
+    my $name = shift;
+    
+    # Make the change.
+    $self->{'log'}->debug("Let's go streaking.");
+    my $resp = $self->{'session'}->get('inv_equip.php',
+    {
+        'pwd'           => $self->{'session'}->pwdhash(),
+        'action'        => 'unequipall',
+    });
+    return (0) if (!$resp);
+    $self->{'session'}->makeDirty();
+    
+    if ($resp->content() !~ m/All items unequipped\./s) {
+        $self->{'session'}->logResponse("Unable to unequip all.", $resp);
+        $@ = "Unable to unequip all.";
+        return(0);
+    }
+    
+    return(1);
+}
+
+
 sub saveOutfit {
     my $self = shift;
     my $name = shift;
