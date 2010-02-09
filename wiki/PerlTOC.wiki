@@ -132,6 +132,18 @@
     * [PerlKoLLogging#debug($msg) debug($msg)]
     * [PerlKoLLogging#error($msg) error($msg)]
     * [PerlKoLLogging#msg($msg,_$level) msg($msg, $level)]
+  * [PerlKoLOutfits KoL::Outfits]
+    * [PerlKoLOutfits#new(%args) new(%args)]
+    * [PerlKoLOutfits#normal() normal()]
+    * [PerlKoLOutfits#custom() custom()]
+    * [PerlKoLOutfits#saveOutfit($name) saveOutfit($name)]
+    * [PerlKoLOutfits#wearNormal($name) wearNormal($name)]
+    * [PerlKoLOutfits#wearCustom($name) wearCustom($name)]
+    * [PerlKoLOutfits#wearPrevious() wearPrevious()]
+    * [PerlKoLOutfits#changeName($old,_$new) changeName($old, $new)]
+    * [PerlKoLOutfits#deleteOutfit($name) deleteOutfit($name)]
+    ===changeName($old, $new)===
+    ===deleteOutfit($name)===
   * [PerlKoLSession KoL::Session]
     * [PerlKoLSession#new(%args) new(%args)]
     * [PerlKoLSession#sessionID() sessionID()]

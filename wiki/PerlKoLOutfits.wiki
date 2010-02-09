@@ -1,0 +1,121 @@
+#summary KoL::Outfits module
+#sidebar PerlTOC
+
+<wiki:toc max_depth="3" />
+
+= Introduction =
+
+This module manages your outfits.
+
+==Methods==
+===new(%args)===
+This is the constructor of the object and simply sets up the data storage.
+
+The [PerlKoLSession KoL::Session] instance for the character you are working with is required in the _%args_ hash using the 'session' key.
+
+If there is an error, _undef_ is returned and _$@_ is set.
+
+*Example:*
+{{{
+my $out = KoL::Outfits->new('session' => $sess);
+}}}
+
+===normal()===
+Returns an array reference containing the names of all your normal (e.g. tatto worthy) outfits.
+
+In the event of an error, _undef_ is returned and _$@_ is set.
+
+*Example:*
+{{{
+my $norm = $out->normal();
+if ($@) {
+    print "Unable to get normal outfits: $@\n";
+} else {
+    foreach my $name (sort(@{$norm})) {
+        print "$name\n";
+    }
+}
+}}}
+
+===custom()===
+Returns an array reference containing the names of all your custom outfits.
+
+In the event of an error, _undef_ is returned and _$@_ is set.
+
+*Example:*
+{{{
+my $cust = $out->custom();
+if ($@) {
+    print "Unable to get custom outfits: $@\n";
+} else {
+    foreach my $name (sort(@{$cust})) {
+        print "$name\n";
+    }
+}
+}}}
+
+===saveOutfit($name)===
+This creates a new outfit out of your current equipment with _$name_ as it's name. Unlike KoL itself, this method will not let you reuse the same name for more than one outfit.
+
+Returns 1 on success or 0 on error and sets _$@_.
+
+*Example:*
+{{{
+if (!$out->saveOutfit('My new outfit')) {
+    print "Unable to save outfit: $@\n";
+    exit(1);
+}
+}}}
+
+===wearNormal($name)===
+===wearCustom($name)===
+Changes your current equipment to the given outfit.
+
+Returns 1 on success and 0 on error. If there is an error, _$@_ is set. If you are already wearing the outfit, 1 is still returned but _$@_ is still set.
+
+*Example:*
+{{{
+if (!$out->wearCustom('My new outfit')) {
+    print "Unable change outfits: $@\n";
+    exit(1);
+}
+}}}
+
+===wearPrevious()===
+Switches your outfit to the last set of equipment you were wearing.
+
+Returns 1 on success or 0 on error and sets _$@_.
+
+*Example:*
+{{{
+if (!$out->wearPrevious()) {
+    print "Unable to switch to previous outfit: $@\n";
+    exit(1);
+}
+}}}
+
+===changeName($old, $new)===
+Changes the name of _$old_ outfit to _$new_.
+
+Returns 1 on success or 0 on error and sets _$@_.
+
+*Example:*
+{{{
+if (!$out->changeName('My new outfit', 'My newer outfit')) {
+    print "Unable to rename outfit: $@\n";
+    exit(1);
+}
+}}}
+
+===deleteOutfit($name)===
+Deletes _$name_ outfit.
+
+Returns 1 on success or 0 on error and sets _$@_.
+
+*Example:*
+{{{
+if (!$out->deleteOutfit('My newer outfit')) {
+    print "Unable to delete outfit: $@\n";
+    exit(1);
+}
+}}}
