@@ -935,16 +935,16 @@ sub testOutfits {
         exit(1);
     }
     
-    $log->msg("Switching to previous outfit.");
+    $log->msg("Switching to 'KoLAPI Outfit'.");
     if (!$out->wearCustom('KoLAPI Outfit')) {
-        $log->error("Unable to switch to previous outfit: $@");
+        $log->error("Unable to switch to 'KoLAPI Outfit': $@");
         $sess->logout();
         exit(1);
     }
     
-    $log->msg("Switching to 'KoLAPI Outfit'.");
+    $log->msg("Switching to previous outfit.");
     if (!$out->wearPrevious()) {
-        $log->error("Unable to switch to 'KoLAPI Outfit': $@");
+        $log->error("Unable to switch to previous outfit: $@");
         $sess->logout();
         exit(1);
     }
@@ -965,6 +965,18 @@ sub testOutfits {
     $log->msg("Deleting outfit as 'KoLAPI Outfit'.");
     if (!$out->deleteOutfit('KoLAPI Outfit')) {
         $log->error("Unable to delete outfit: $@");
+        $sess->logout();
+        exit(1);
+    }
+    
+    $log->msg("Let's get naked!");
+    if (!$out->unequipAll()) {
+        $log->error("Unable to unequip all: $@");
+        $sess->logout();
+        exit(1);
+    }
+    if (!$out->wearPrevious()) {
+        $log->error("Unable to put my clothes back on: $@");
         $sess->logout();
         exit(1);
     }
