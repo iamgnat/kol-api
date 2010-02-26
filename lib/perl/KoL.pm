@@ -12,7 +12,6 @@ use Fcntl;
 use POSIX;
 use Symbol;
 use IO::Handle;
-use Time::HiRes;
 
 our(@ISA, @EXPORT);
 require Exporter;
@@ -37,7 +36,6 @@ sub new {
                 #'www6.kingdomofloathing.com',
                 'www7.kingdomofloathing.com',
             ],
-            'dirty'     => time(),
         };
         bless($self, $class);
         $_singleton = $self;
@@ -56,28 +54,6 @@ sub hosts {
     my $self = shift || KoL->new();
     
     return($self->{'hosts'});
-}
-
-sub dirty {
-    my $self = shift || KoL->new();
-    
-    return($self->{'dirty'});
-}
-
-sub time {
-    return(Time::HiRes::time());
-}
-
-sub makeDirty {
-    my $self = shift || KoL->new();
-    
-    # Standard seconds weren't good enough. Sleep for 100th of a
-    #   second (or smallest amount for the platform) so we know
-    #   there will be a difference when comparing against it.
-    $self->{'dirty'} = $self->time();
-    Time::HiRes::sleep(0.01);
-    
-    return;
 }
 
 sub calledFrom {
