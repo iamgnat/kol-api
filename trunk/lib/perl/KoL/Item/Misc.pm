@@ -165,7 +165,7 @@ sub sell {
     };
     
     my $resp = $sess->post('sellstuff.php', $form);
-    KoL::makeDirty();
+    $self->{'controller'}{'session'}->makeDirty();
     return(0) if (!$resp);
     
     if ($resp->content() !~ m/You sell your.+?<td valign=center>You gain ([\d,]+) Meat/s) {
@@ -177,6 +177,45 @@ sub sell {
     $meat =~ s/,//g;
     
     return($meat);
+}
+
+sub discard {
+    my $self = shift;
+    
+    if (ref($self->{'controller'}) ne 'KoL::Inventory') {
+        $@ = "Only inventory items may be discarded.";
+        return(0);
+    }
+    
+    if (!$self->{'discardable'} || $self->{'quest'}) {
+        $@ = "You may not discard this item.";
+        return(0);
+    }
+    
+    # Use the method rather than a direct check to force an update if needed.
+    if ($self->count() == 0) {
+        $@ = "You do not have any to discard.";
+        return(0);
+    }
+    
+    my $sess = $self->{'controller'}{'session'};
+    my $form = {
+        'pwd'       => $sess->pwdhash(),
+        'action'    => 'discard',
+        'whichitem' => $self->{'id'},
+    };
+    
+    my $resp = $sess->post('inventory.php', $form);
+    $self->{'controller'}{'session'}->makeDirty();
+    return(0) if (!$resp);
+    
+    if ($resp->content() !~ m/You discard/s) {
+        $sess->logResponse("Unable to discard " . $self->{'name'} . ".", $resp);
+        $@ = "Unable to discard item.";
+        return(0);
+    }
+    
+    return(1);
 }
 
 1;
