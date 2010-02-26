@@ -112,10 +112,30 @@ my $count = int($items->{$name}->count() / 2) || 1;
 $log->msg("Selling $count out of " . $items->{$name}->count() . " of $name");
 my $meat = $items->{$name}->sell($count);
 if (!$meat) {
-    $log->error("Unable to sell item ($sold != $count): $@");
+    $log->error("Unable to sell item: $@");
     $sess->logout();
     exit(1);
 }
 $log->msg("Sold $count for $meat meat.");
+$log->msg("We now have " . $items->{$name}->count() . " left.");
+}}}
+
+===discard()===
+Attempts to discard one of the item.
+
+This may only be called from items in your [PerlKoLInventory KoL::Inventory].
+
+Returns 1 on success and 0 if there is an error and _$@_ is set.
+
+*Example:*
+{{{
+my $name = "white satin pants";
+my $items = $inv->allItems();
+$log->msg("Discarding 1 out of " . $items->{$name}->count() . " of $name");
+if (!$items->{$name}->discard()) {
+    $log->error("Unable to discard item: $@");
+    $sess->logout();
+    exit(1);
+}
 $log->msg("We now have " . $items->{$name}->count() . " left.");
 }}}

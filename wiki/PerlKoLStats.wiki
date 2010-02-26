@@ -46,6 +46,12 @@ Returns the number of turns the user has remaining.
 *Example:*
 {{{my $meat = $stats->meat();}}}
 
+===drunkenness()===
+Returns the current level of drunkenness.
+
+*Example:*
+{{{my $drunk = $stats->drunkenness();}}}
+
 ===lastAdventure()===
 The area name of the last adventure (e.g. Spooky Forest).
 
