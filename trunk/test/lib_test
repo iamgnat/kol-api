@@ -780,6 +780,40 @@ sub testInventory {
         last;
     }
     
+    $log->msg("Testing discarding items");
+    $items = $inv->allItems();
+    foreach my $name (keys(%{$items})) {
+        next if (!grep(/^\Q$name\E$/,
+                    ("white snake skin", "white sword",
+                    "white satin pants", "catgut")));
+        
+        $log->msg("Discarding 1 out of " . $items->{$name}->count() . " of $name");
+        if (!$items->{$name}->discard()) {
+            $log->error("Unable to discard item: $@");
+            $sess->logout();
+            exit(1);
+        }
+        $log->msg("We now have " . $items->{$name}->count() . " left.");
+        last;
+    }
+    
+    $log->msg("Testing drinking items");
+    my $booze = $inv->booze();
+    foreach my $name (keys(%{$booze})) {
+        next if (!grep(/^\Q$name\E$/, ("can of Swiller")));
+        
+        $log->msg("Drinking 2 out of " . $booze->{$name}->count() . " of $name");
+        my $results = $booze->{$name}->drink(2);
+        if (!$results) {
+            $log->error("Unable to drink item: $@");
+            $sess->logout();
+            exit(1);
+        }
+        $log->msg("We now have " . $booze->{$name}->count() . " left.");
+        print Dumper($results);
+        last;
+    }
+    
     if (!$sess->logout()) {
         $log->error("Unable to logout '$user': $@");
         exit(1);
@@ -1033,6 +1067,7 @@ sub testStats {
                 "\nLevel: " . $stats->level() .
                 "\nTitle: " . $stats->title() .
                 "\nMeat:  " . $stats->meat() .
+                "\nDrunkenness:  " . $stats->drunkenness() .
                 "\nTurns Left: " . $stats->turns() .
                 "\nLast Adventure: " . $stats->lastAdventure() .
                 "\nMuscle: $mus" .

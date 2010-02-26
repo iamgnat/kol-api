@@ -52,6 +52,7 @@ sub new {
             'max'       => 0,
             'current'   => 0,
         },
+        'drunkenness'   => 0,
         'meat'          => 0,
         'turns'         => 0,
         'last_adv'      => undef,
@@ -157,6 +158,12 @@ sub update {
     $self->{'moxie'}{'buffed'} =~ s/,//g;
     $self->{'moxie'}{'base'} =~ s/,//g;
     
+    # Drunkenness
+    if ($content =~ m/(Drunkenness|Tipsiness|Inebriety|Temulency):.+?<b>([\d,]+)<\/b>/s) {
+        $self->{'drunkenness'} = $2;
+        $self->{'drunkenness'} =~ s/,//g;
+    }
+    
     # Find the current HP value
     if ($content !~ m/doc\("hp"\).+?([\d,]+).+?([\d,]+)</s) {
         $self->{'session'}->logResponse("Unable to locate hp values", $resp);
@@ -233,6 +240,7 @@ sub getInfo {
 sub level {return($_[0]->getInfo('level'));}
 sub title {return($_[0]->getInfo('title'));}
 sub meat {return($_[0]->getInfo('meat'));}
+sub drunkenness {return($_[0]->getInfo('drunkenness'));}
 sub turns {return($_[0]->getInfo('turns'));}
 sub lastAdventure {return($_[0]->getInfo('last_adv'));}
 sub effects {return($_[0]->getInfo('effects'));}
