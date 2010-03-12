@@ -18,6 +18,7 @@ use KoL::Inventory;
 use KoL::Closet;
 use KoL::Outfits;
 use KoL::Wiki;
+use KoL::Adventure;
 use Data::Dumper;
 
 my $cli = KoL::CommandLine->new();
@@ -122,8 +123,15 @@ $cli->addOption(
     'description'   => 'Test KoL::Outfits.'
 );
 $cli->addOption(
-    'name'          => 'test-all',
+    'name'          => 'adventure',
     'short-name'    => 'a',
+    'type'          => 'boolean',
+    'default'       => 0,
+    'description'   => 'Test KoL::Adventure.'
+);
+$cli->addOption(
+    'name'          => 'test-all',
+    'short-name'    => 'A',
     'type'          => 'boolean',
     'default'       => 0,
     'description'   => 'Run all tests..'
@@ -147,6 +155,7 @@ testCloset() if ($cli->getValue('closet') || $cli->getValue('test-all'));
 testOutfits() if ($cli->getValue('outfits') || $cli->getValue('test-all'));
 testWiki() if ($cli->getValue('wiki') || $cli->getValue('test-all'));
 testStats() if ($cli->getValue('stats') || $cli->getValue('test-all'));
+testAdventure() if ($cli->getValue('adventure') || $cli->getValue('test-all'));
 
 $log->msg("Testing complete.");
 
@@ -1076,6 +1085,35 @@ sub testStats {
                 "\nHP: $hp" .
                 "\nMP: $mp" .
                 "\nEffects:$effects");
+    
+    if (!$sess->logout()) {
+        $log->error("Unable to logout '$user': $@");
+        exit(1);
+    }
+    
+    return;
+}
+
+sub testAdventure {
+    $log->msg("Testing KoL::Adventure");
+    my $sess = KoL::Session->new(
+        'email'         => $mail,
+    );
+    
+    if (!$sess->login($user)) {
+        $log->error("Unable to login as '$user': $@");
+        exit(1);
+    }
+    
+    # Spooky Forest
+    my $adv = KoL::Adventure->new('session' => $sess, 'area-id' => '15');
+    my $res = $adv->adventure();
+    if (!$res) {
+        $log->error("Unable to adventure: $@");
+        $sess->logout();
+        exit(1);
+    }
+    print Dumper($res);
     
     if (!$sess->logout()) {
         $log->error("Unable to logout '$user': $@");
