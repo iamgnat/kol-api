@@ -74,7 +74,7 @@ sub update {
     my $content = $resp->content();
     
     # Get the stored meat
-    if ($content !~ m/Your closet contains ([\d,]+) meat/s) {
+    if ($content !~ m/Your closet contains <b>([\d,]+)<\/b> meat/s) {
         $self->{'session'}->logResponse("Unable to locate current meat!", $resp);
         $@ = "Unable to locate current meat amount.";
         return(0);

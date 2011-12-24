@@ -9,8 +9,9 @@ package KoL::Wiki;
 
 use strict;
 use LWP;
-use LWP::UserAgent;
 use URI::Escape;
+use LWP::UserAgent;
+use HTML::Entities;
 use KoL;
 use KoL::Logging;
 
@@ -84,7 +85,9 @@ sub getItemIds {
             time() - $_cachedResults{'name'}{$name}{'cached'} > 3600) {
             $self->{'log'}->debug("Searching Wiki for '$name'");
             
-            my $resp = $self->get("thekolwiki/index.php/$name");
+            my $uri = $name;
+            $uri =~ s/([^A-Za-z0-9\-_\.])/sprintf("%%%02X", ord($1))/seg;
+            my $resp = $self->get("thekolwiki/index.php/$uri");
             return(undef) if (!$resp);
             
             # Pull the content out of the page.
@@ -153,7 +156,7 @@ sub getItemIds {
             }
             
             # Recursively call with the name.
-            return($self->getItemIds('name' => $1));
+            return($self->getItemIds('name' => decode_entities($1)));
         }
         
         if (exists($_cachedResults{'descid'}{$descid})) {

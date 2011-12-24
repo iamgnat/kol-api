@@ -17,10 +17,14 @@ sub new {
     my $self = KoL::Item::Misc->new(%args);
     return(undef) if (!$self);
     
+    $self->{'quality'} = $args{'quality'} if (exists($args{'quality'}));
+    
     bless($self, $class);
     
     return($self);
 }
+
+sub quality {return($_[0]->{'quality'});}
 
 sub drink {
     my $self = shift;
