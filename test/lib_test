@@ -646,7 +646,7 @@ sub testItems {
             'descid'    => '642596336'
         },
         {
-            'type'      => 'OffHandItem',
+            'type'      => 'Accessory',
             'name'      => 'continuum transfunctioner',
             'descid'    => '488592577'
         },
@@ -737,6 +737,7 @@ sub testInventory {
     
     foreach my $type qw(accessories booze combatItems food
                         hats miscellaneous pants potions shirts weapons) {
+        $log->msg("    $type");
         my $x = $inv->$type();
         if (!$x && $@) {
             $log->error("Unable to get $type items: $@");
@@ -1107,13 +1108,16 @@ sub testAdventure {
     
     # Spooky Forest
     my $adv = KoL::Adventure->new('session' => $sess, 'area-id' => '15');
-    my $res = $adv->adventure();
-    if (!$res) {
-        $log->error("Unable to adventure: $@");
-        $sess->logout();
-        exit(1);
+    for (my $i = 0 ; $i < 5 ; $i++) {
+        my $res = $adv->adventure();
+        if (!$res) {
+            $log->error("Unable to adventure: $@");
+            $sess->logout();
+            exit(1);
+        }
+        print Dumper($sess->lastResponse()->content());
+        print Dumper($res);
     }
-    print Dumper($res);
     
     if (!$sess->logout()) {
         $log->error("Unable to logout '$user': $@");

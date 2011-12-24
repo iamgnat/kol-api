@@ -29,12 +29,12 @@ sub new {
             'version'   => 'v0_r0_b0',
             'hosts'     => [
                 'www.kingdomofloathing.com',
-                'www2.kingdomofloathing.com',
-                'www3.kingdomofloathing.com',
-                'www4.kingdomofloathing.com',
-                'www5.kingdomofloathing.com',
+                #'www2.kingdomofloathing.com',
+                #'www3.kingdomofloathing.com',
+                #'www4.kingdomofloathing.com',
+                #'www5.kingdomofloathing.com',
                 #'www6.kingdomofloathing.com',
-                'www7.kingdomofloathing.com',
+                #'www7.kingdomofloathing.com',
             ],
         };
         bless($self, $class);

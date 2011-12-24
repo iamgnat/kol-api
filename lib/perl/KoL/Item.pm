@@ -96,6 +96,14 @@ sub new {
         if ($sub =~ m/weapon/i) {
             $args{'subtype'} = $type;
             $sub = "Weapon";
+        } elsif ($sub =~ m/food \((.+?)\)/i) {
+            $args{'quality'} = $1;
+            $sub = "Food";
+        } elsif ($sub =~ m/booze \((.+?)\)/i) {
+            $args{'quality'} = $1;
+            $sub = "Food";
+        } elsif ($sub =~ m/usable/i) {
+            $sub = "Usable";
         }
         my $mod = 'KoL::Item::';
         $sub =~ s/[^a-z0-9]/ /ig;

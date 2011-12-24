@@ -33,33 +33,33 @@ sub new {
     };
     
     # Get the name
-    if ($content !~ m/<center><img.+?<b>(.+?)</s) {
+    if ($content !~ m/<center><img.+?<b>(.+?)</is) {
         $@ = "Unable to locate item name!";
         return(undef);
     }
     $self->{'name'} = $1;
     
     # Get the description
-    if ($content !~ m/<blockquote.*?>(.+?)<br><br>/s) {
+    if ($content !~ m/<blockquote.*?>(.+?)<br><br>/is) {
         $@ = "Unable to locate item description!";
         return(undef);
     }
     $self->{'description'} = $1;
     
     # Selling price
-    if ($content =~ m/>Selling Price: <b>([\d,]+) Meat.</s) {
+    if ($content =~ m/>Selling Price: <b>([\d,]+) Meat.</is) {
         $self->{'meat'} = $1;
         $self->{'meat'} =~ s/,//g;
     }
     
     # Non-tradable?
-    $self->{'tradable'} = 0 if ($content =~ m/Cannot be traded/s);
+    $self->{'tradable'} = 0 if ($content =~ m/Cannot be traded/is);
     
     # Non-discardable?
-    $self->{'discardable'} = 0 if ($content =~ m/Cannot be discarded/s);
+    $self->{'discardable'} = 0 if ($content =~ m/Cannot be discarded/is);
     
     # Quest Item?
-    $self->{'quest'} = 1 if ($content =~ m/Quest Item/s);
+    $self->{'quest'} = 1 if ($content =~ m/Quest Item/is);
     
     # requirements
     while ($content =~ m/>([Ml].+?) Required: <b>([\d,]+)</igs) {

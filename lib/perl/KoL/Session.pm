@@ -16,6 +16,7 @@ use Time::HiRes;
 use KoL;
 use KoL::Stats;
 use KoL::Logging;
+use KoL::FileUtils;
 
 sub new {
     my $class = shift;
@@ -118,21 +119,58 @@ sub user {
     return($self->{'user'});
 }
 
+sub lock {
+    my $self = shift;
+    my $user = shift;
+    
+    my $lock = "/tmp/kol.$user.lock";
+    if (-e $lock) {
+        my $pid = KoL::FileUtils::readFile($lock) || 0;
+        if ($pid ne $$) {
+            $@ = "'$user' appears to already be in use by another process.";
+            return(0);
+        }
+    } else {
+        if (!KoL::FileUtils::writeFile($lock, $$)) {
+            $@ = "Unable to create lock file for '$user': $@";
+            return(0);
+        }
+    }
+    
+    return(1);
+}
+
+sub _unlock {
+    my $self = shift;
+    my $user = shift;
+    
+    my $lock = "/tmp/kol.$user.lock";
+    my $pid = KoL::FileUtils::readFile($lock) || 0;
+    if ($pid eq $$ && !unlink($lock)) {
+        $@ = "Unable to remove lock file: $!";
+        return(0);
+    }
+    return(1);
+}
+
 sub login {
     my $self = shift;
     my $user = shift;
     my $pass = shift;
     
     return(1) if ($self->{'sessionid'});
+    return(0) if (!$self->lock($user));
     
     if (!$pass) {
         if (!-t) {
+            $self->_unlock($user);
             $@ = "No password supplied for '$user' and this is not an " .
                     "interactive terminal.";
             return(0);
         }
         $pass = KoL::promptUser("Enter password for '$user':", 'password');
         if (!$pass) {
+            $self->_unlock($user);
             $@ = "Unable to get password from user: $@";
             return(0);
         }
@@ -144,10 +182,16 @@ sub login {
     # Get the hash key for hashing the password.
     #   Disable redirects so we can get the key.
     $resp = $self->get('login.php');
-    return (0) if (!$resp);
+    if (!$resp) {
+        my $msg = $@;
+        $self->_unlock($user);
+        $@ = $msg;
+        return(0);
+    }
     
     # Did we redirect?
     if (!$resp->previous()) {
+        $self->_unlock($user);
         $self->logResponse("Login page did not redirect", $resp);
         $@ = "Login page did not redirect: " . $resp->status_line();
         return(0);
@@ -155,6 +199,7 @@ sub login {
     
     # Did we get the login page?
     if ($resp->content() !~ m/Enter the Kingdom/s) {
+        $self->_unlock($user);
         $self->logResponse("Did not get the login page", $resp);
         $@ = "Did not get the login page: " . $resp->status_line();
         return(0);
@@ -162,6 +207,7 @@ sub login {
     
     # Get the new URI.
     if ($resp->previous()->header('Location') !~ m/(login\.php\?loginid=\S+)/s) {
+        $self->_unlock($user);
         $self->logResponse("Unable to get login URI", $resp);
         $@ = "Unable to get login URI: " . $resp->status_line();
         return(0);
@@ -170,6 +216,7 @@ sub login {
     
     # Get the challenge hash key
     if ($resp->content() !~ m/<input.+?name=["']*challenge["']*.+?value=["']*([^"'\s>]+)["'\s>]/s) {
+        $self->_unlock($user);
         $self->logResponse("Unable to get the challenge hash key", $resp);
         $@ = "Unable to get the challenge hash key: " . $resp->status_line();
         return(0);
@@ -187,14 +234,21 @@ sub login {
         'secure'    => 1,
         'response'  => $pass
     });
-    return(0) if (!$resp);
+    if (!$resp) {
+        my $msg = $@;
+        $self->_unlock($user);
+        $@ = $msg;
+        return(0);
+    }
     
     if ($resp->content() =~ m/Login failed/s) {
+        $self->_unlock($user);
         $@ = "Bad username or password.";
         return(0);
     }
     
     if ($resp->content() =~ m/Too many login attempts/s) {
+        $self->_unlock($user);
         $@ = "Too many recent login attempts.";
         return(0);
     }
@@ -203,6 +257,7 @@ sub login {
     my $cookies = $self->{'lwp'}->cookie_jar()->as_string();
     $self->{'log'}->debug("Cookies:\n$cookies");
     if ($cookies !~ m/.*PHPSESSID\=(\w*).*/s) {
+        $self->_unlock($user);
         $self->logResponse("Unable to locate session id after login as '$user'", $resp);
         $@ = "Unable to locate session id.";
         return(0);
@@ -212,9 +267,15 @@ sub login {
     $self->{'user'} = $user;
     
     $resp = $self->get('charpane.php');
-    return(0) if (!$resp);
+    if (!$resp) {
+        my $msg = $@;
+        $self->_unlock($user);
+        $@ = $msg;
+        return(0);
+    }
     
     if ($resp->content() !~ m/var pwdhash = "(.+?)"/s) {
+        $self->_unlock($user);
         $self->logResponse("Unable to locate pwdhash", $resp);
         $@ = "Unable to locate pwdhash!";
         return(0);
@@ -241,6 +302,8 @@ sub logout {
         return(0);
     }
     
+    return(0) if (!$self->_unlock($user));
+    
     $self->makeDirty();
     
     $self->{'sessionid'} = undef;
@@ -254,7 +317,7 @@ sub logout {
     
     if ($resp->content() !~ m/Logged Out/s) {
         $self->{'log'}->error("'$user' may not have been logged out as expected!");
-        $self->logResponse("Unable to locate session id after login as '$user'", $resp);
+        $self->logResponse("'$user' may not have been logged out as expected!", $resp);
     }
     return(1);
 }

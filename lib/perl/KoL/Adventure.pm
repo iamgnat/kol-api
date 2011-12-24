@@ -97,6 +97,7 @@ sub adventure {
     my $get = 1;
     while (!$done) {
         my ($resp);
+        my $pResp = $self->{'session'}->lastResponse();
         if ($get) {
             print "Getting $uri with " . join(',', %{$form}) . "\n";
             $resp = $self->{'session'}->get($uri, $form);
@@ -164,7 +165,9 @@ sub adventure {
                 $get = 0;
                 
                 # Process from the previous round/auto-action
-                my $res = $self->processResults($content);
+                my $results = $self->processResults($content);
+                my $res = $results->{'results'};
+                print Dumper($res);
                 $info->{'win'} = $res->{'win'} if (exists($res->{'win'}));
                 $info->{'runaway'} = $res->{'runaway'} if (exists($res->{'runaway'}));
                 
@@ -181,6 +184,7 @@ sub adventure {
                 }
                 
                 if (exists($res->{'win'})) {
+                    print "Got win, should stop now.\n";
                     $done = 1;
                     next;
                 }
@@ -219,6 +223,13 @@ sub adventure {
                 }
             } else {
                 use Data::Dumper;
+                print "###################################\n";
+                print "###      Previous Response      ###\n";
+                print "###################################\n";
+                print Dumper($pResp);
+                print "###################################\n";
+                print "###       Current Response      ###\n";
+                print "###################################\n";
                 print Dumper($resp);
                 $done = 1;
             }
@@ -322,7 +333,7 @@ sub processResults {
             'sleeze'    => 0,
         };
         
-        while ($extra =~ m/<font color=(\S+?)><b>+([\d,]+)<\/b><\/font>/sg) {
+        while ($extra =~ m/<font color=(\S+?)><b>\+([\d,]+)<\/b><\/font>/sg) {
             my $type = $1;
             my $amount = $2;
             $amount =~ s/,//g;
@@ -343,11 +354,19 @@ sub processResults {
         }
     }
     
+    while ($content =~ m/You acquire an item: (.+?)(\.|<)/sg) {
+        my $val = 1;
+        my $thing = $1;
+        
+        $thing =~ s/<.+?>//g;
+        $results->{'stuff'}{$thing} += $val;
+    }
     while ($content =~ m/You (gain|acquire) ([\d,]+) (.+?)(\.|<)/sg) {
         my $val = $2;
         my $thing = $3;
         
         $val =~ s/,//g;
+        $thing =~ s/<.+?>//g;
         $results->{'stuff'}{$thing} += $val;
     }
     
