@@ -30,7 +30,7 @@ This is the constructor of the object.
 The argument is a hash that can contain the following information:
 
 || *Key* || *Required* || *Description* ||
-|| agent || No || The agent string to use for HTTP requests. The default is "KoLAPI/" . [PerlKoL#version() KoL::version()]. ||
+|| agent || No || The agent string to use for HTTP requests. The default is "KoLAPI/" . [PerlKoL#version() KoL->version()]. ||
 || timeout || No || The number of seconds to wait for a response. The default is 60. ||
 || server || No || The [http://kol.coldfront.net/thekolwiki/index.php KoL Wiki] server to connect to. The default is 'kol.coldfront.net'. ||
 || email || Yes || An email address to include in the headers sent to the [http://kol.coldfront.net/thekolwiki/index.php KoL Wiki]. This should be the end user's email address. ||

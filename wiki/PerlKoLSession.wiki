@@ -16,9 +16,9 @@ This is the constructor of the object.
 The argument is a hash that can contain the following information:
 
 || *Key* || *Required* || *Description* ||
-|| agent || No || The agent string to use for HTTP requests. The default is "KoLAPI/" . [PerlKoL#version() KoL::version()]. ||
+|| agent || No || The agent string to use for HTTP requests. The default is "KoLAPI/" . [PerlKoL#version() KoL->version()]. ||
 || timeout || No || The number of seconds to wait for a response. The default is 60. ||
-|| server || No || The [http://www.kingdomofloathing.com KoL] server to connect to. The default is a random server take from [PerlKoL#hosts() KoL::hosts()]. ||
+|| server || No || The [http://www.kingdomofloathing.com KoL] server to connect to. The default is the value of [PerlKoL#hosts() KoL->host()]. ||
 || email || Yes || An email address to include in the headers sent to [http://www.kingdomofloathing.com KoL]. This should be the end user's email address. ||
 
 *Example:*
