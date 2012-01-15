@@ -361,12 +361,11 @@ sub _processResponse {
             $@ = "You have been logged out.";
             return(undef);
         }
-        if ($hdrs->{'location'} !~ m%http://([^/]+)/%s) {
+        if ($hdrs->{'location'} =~ m%http://([^/]+)/%s) {
             $self->{'log'}->debug("We were redirected, but can't process '" .
                                     $hdrs->{'location'} . "'.");
-            return($resp);
+            $self->{'server'} = $1 if ($1 ne $self->{'server'});
         }
-        $self->{'server'} = $1 if ($1 ne $self->{'server'});
     }
     
     return($resp);
