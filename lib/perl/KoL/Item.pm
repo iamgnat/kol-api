@@ -12,6 +12,7 @@ use Digest::MD5;
 use KoL::Wiki;
 use KoL::Logging;
 use KoL::Item::Accessory;
+use KoL::Item::Beverage;
 use KoL::Item::Booze;
 use KoL::Item::CombatItem;
 use KoL::Item::CraftingItem;
@@ -96,12 +97,9 @@ sub new {
         if ($sub =~ m/weapon/i) {
             $args{'subtype'} = $type;
             $sub = "Weapon";
-        } elsif ($sub =~ m/food \((.+?)\)/i) {
-            $args{'quality'} = $1;
-            $sub = "Food";
-        } elsif ($sub =~ m/booze \((.+?)\)/i) {
-            $args{'quality'} = $1;
-            $sub = "Food";
+        } elsif ($sub =~ m/(food|beverage|booze) \((.+?)\)/i) {
+            $sub = ucfirst($1);
+            $args{'quality'} = $2;
         } elsif ($sub =~ m/usable/i) {
             $sub = "Usable";
         }
@@ -123,7 +121,7 @@ sub new {
             my $id = exists($args{'name'}) ? $args{'name'} : $args{'descid'};
             $log->error("Unable to create $id as a $mod object. Creating " .
                         "as a KoL::Item::Misc object instead. This is a bug " .
-                        "please report it ASAP.");
+                        "please report it ASAP:\n$@");
             $self = KoL::Item::Misc->new(%args);
         }
         
