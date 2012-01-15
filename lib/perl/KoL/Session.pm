@@ -26,11 +26,7 @@ sub new {
     # Defaults.
     $args{'agent'} = 'KoLAPI/' . $kol->version() if (!exists($args{'agent'}));
     $args{'timeout'} = 60 if (!exists($args{'timeout'}));
-    if (!exists($args{'server'})) {
-        my $servers = $kol->hosts();
-        my $i = int(rand(@{$servers}));
-        $args{'server'} = $servers->[$i];
-    }
+    $args{'server'} = $kol->host() if (!exists($args{'server'}));
     
     if (!exists($args{'email'})) {
         $@ = "You must supply an email address.";
