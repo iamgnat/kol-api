@@ -12,6 +12,8 @@ use Fcntl;
 use POSIX;
 use Symbol;
 use IO::Handle;
+use KoL::Logging;
+use KoL::CommandLine;
 
 our(@ISA, @EXPORT);
 require Exporter;
@@ -26,34 +28,66 @@ sub new {
     
     if (!defined($_singleton)) {
         my $self = {
+            'cli'       => KoL::CommandLine->new(),
             'version'   => 'v0_r0_b0',
-            'hosts'     => [
-                'www.kingdomofloathing.com',
-                #'www2.kingdomofloathing.com',
-                #'www3.kingdomofloathing.com',
-                #'www4.kingdomofloathing.com',
-                #'www5.kingdomofloathing.com',
-                #'www6.kingdomofloathing.com',
-                #'www7.kingdomofloathing.com',
-            ],
+            'host'      => 'www.kingdomofloathing.com',
         };
         bless($self, $class);
         $_singleton = $self;
+
+        $self->{'cli'}->addOption(
+            'name'          => 'kol-server',
+            'type'          => 'string',
+            'description'   => 'Host name of the Kingdom of Loathing server.',
+            'default'       => $self->{'host'},
+            'callback'      => [$self, \&optionCallback]
+        );
+        
+        KoL::Logging->new('cli' => $self->{'cli'});
     }
     
     return($_singleton);
 }
 
+sub optionCallback {
+    my $self = shift;
+    my $cli = shift;
+    my $opt = shift;
+    my $val = shift;
+    
+    if ($opt eq 'kol-server') {
+        $self->setKoLHost($val);
+    } else {
+        $self->error("Unknown option '$opt' given to CLI callback. Ignoring.");
+    }
+    
+    return;
+}
+
+sub setKoLHost {
+    my $self = shift;
+    my $host = shift;
+    
+    $self->{'host'} = $host;
+    return(1);
+}
+
+sub cli {
+    my $self = shift;
+    
+    return($self->{'cli'});
+}
+
 sub version {
-    my $self = shift || KoL->new();
+    my $self = shift;
     
     return($self->{'version'});
 }
 
-sub hosts {
-    my $self = shift || KoL->new();
+sub host {
+    my $self = shift;
     
-    return($self->{'hosts'});
+    return($self->{'host'});
 }
 
 sub calledFrom {

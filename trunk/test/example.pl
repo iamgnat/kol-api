@@ -11,7 +11,8 @@ use KoL::Logging;
 use KoL::Session;
 use KoL::Terrarium;
 
-my $cli = KoL::CommandLine->new();
+my $kol = KoL->new();
+my $cli = $kol->cli();
 my $log = KoL::Logging->new();
 
 $cli->addOption(

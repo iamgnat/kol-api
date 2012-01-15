@@ -21,7 +21,8 @@ use KoL::Wiki;
 use KoL::Adventure;
 use Data::Dumper;
 
-my $cli = KoL::CommandLine->new();
+my $kol = KoL->new();
+my $cli = $kol->cli();
 my $log = KoL::Logging->new();
 
 $cli->addOption(
@@ -162,8 +163,11 @@ $log->msg("Testing complete.");
 exit(0);
 
 sub testKoL {
+    my $kol = KoL->new();
     $log->msg("Testing KoL");
     
+    $log->msg("Version: " . $kol->version());
+    $log->msg("Server: " . $kol->host());
     $log->msg("Called from: " . calledFrom());
     $log->msg("You supplied: " . promptUser('Please enter a number: ', 'number'));
     $log->msg("You supplied: " . promptUser('Please enter a boolean: ', 'boolean'));
