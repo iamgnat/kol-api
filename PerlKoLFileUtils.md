@@ -1,0 +1,74 @@
+
+
+# Introduction #
+
+This module doesn't have anything to do with [KoL](http://www.kingdomofloathing.com) itself. This module is simply a collection of file related functions.
+
+# Exported Functions #
+
+### readFile($file) ###
+Reads the file specified by _$file_ and returns it's contents.
+
+If the function is called in scalar context, the result is the entire file as a string. If there is an error, _undef_ is returned.
+
+If the function is called in an array context, the result is an array where each element is a line of the file. If there is an error and empty array is returned.
+
+In the event of an error, _$@_ is set with an appropriate error message.
+
+**Examples:**
+
+```
+# Scalar context
+my $data = readFile('/etc/passwd');
+if (!$data) {
+    print "Unable to read /etc/passwd: $@";
+    exit(1);
+}
+```
+
+```
+# Array context
+my @data = readFile('/etc/passwd');
+if (!@data && $@) {
+    print "Unable to read /etc/passwd: $@";
+    exit(1);
+}
+```
+
+### writeFile($file, $data) ###
+A wrapper function to simplify writing data to a file into a single command.
+
+The _$file_ argument can take two forms. It may be a string containing the path and name of a file, or it can be a _GLOB_ reference of an existing file handle. In the former case, it will attempt to truncate the file if it already exists. If you pass a _GLOB_, it assumes that you already opened it the way you want and it is set to write in the desired location.
+
+The _$data_ argument is simply a string that you want to be written to the file.
+
+If _$file_ is not a _GLOB_, the file is closed after the write is complete. If it is a _GLOB_, it is left open for the caller to deal with on their own.
+
+If there is an error, it returns 0 and sets $@. Otherwise it returns 1.
+
+**Example:**
+```
+if (!writeFile('/etc/passwd', $data)) {
+    print "Unable to write to /etc/passwd: $@";
+    exit(1);
+}
+```
+
+### appendFile($file, $data) ###
+A wrapper function to simplify appending data to a file into a single command.
+
+The _$file_ argument can take two forms. It may be a string containing the path and name of a file, or it can be a _GLOB_ reference of an existing file handle. In the former case, it will attempt to open the file for appending. If you pass a _GLOB_, it assumes that you already opened it the way you want and it is set to write in the desired location.
+
+The _$data_ argument is simply a string that you want to be written to the file.
+
+If _$file_ is not a _GLOB_, the file is closed after the write is complete. If it is a _GLOB_, it is left open for the caller to deal with on their own.
+
+If there is an error, it returns 0 and sets $@. Otherwise it returns 1.
+
+**Example:**
+```
+if (!appendFile('/etc/passwd', $data)) {
+    print "Unable to append to /etc/passwd: $@";
+    exit(1);
+}
+```

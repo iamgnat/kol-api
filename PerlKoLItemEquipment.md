@@ -1,0 +1,77 @@
+**WARNING:**
+
+This module is currently under active development. This means that:
+
+  1. The API is not complete and functionality is being added and changed as it is developed.
+  1. The documentation is likely not up to date with the code.
+
+Using any functionality of this module at this time is just silly and at your own risk.
+
+You've been warned!
+
+
+
+# Introduction #
+
+This object is a generic representation of an equipment item. This object is not intended to be used directly, instead it is meant to be sub-classed for the specific item type.
+
+This object is a subclass of [KoL::Item::Misc](PerlKoLItemMisc.md). Please see the documentation for more details on the functionality of this object.
+
+## TODO ##
+
+Need to add equip & unequip functionality.
+
+## Methods ##
+### new(%args) ###
+This is the constructor of the object and should only ever be called by a sub-class' _new()_ method.
+
+In addition to the hash arguments that [KoL::Item::Misc->new()](PerlKoLItemMisc#new(%args).md) uses, this module also support:
+
+| **Key** | **Required** | **Description** |
+|:--------|:-------------|:----------------|
+| subtype | No | The sub-type of the item (weapons only). |
+| inuse | No | Number of instances currently equipped. |
+
+### subtype() ###
+Returns the sub-type of the object.
+
+**Example:**
+```
+print $weap->subtype() . "\n";
+```
+
+### power() ###
+Returns the power of the object.
+
+**Example:**
+```
+print $item->power() . "\n";
+```
+
+### enchantments() ###
+Returns an array reference of the enchantments on the object.
+
+**Example:**
+```
+foreach my $enc (@{$item->enchantments()}) {
+    print "$enc\n";
+}
+```
+
+### inUse() ###
+Returns the number of instances that are currently equipped.
+
+As this information is not static (e.g. not from the description) it will call the controlling object's _update()_ method prior to returning a result. See [KoL::Item::Misc->getInfo()](PerlKoLItemMisc#getInfo($key).md) for more details.
+
+**Example:**
+```
+print $weap->inUse() . "\n";
+```
+
+### setInUse($val) ###
+Sets the number of instances currently in use.
+
+**Example:**
+```
+$item->setInUse(2);
+```

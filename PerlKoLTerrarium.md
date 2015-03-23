@@ -1,0 +1,174 @@
+
+
+# Introduction #
+
+This module allows you to manage the Terrarium and access your familiars.
+
+## Methods ##
+### new(%args) ###
+This is the constructor of the object and simply sets up the data storage.
+
+The [KoL::Session](PerlKoLSession.md) instance for the character you are working with is required in the _%args_ hash using the 'session' key.
+
+If there is an error, _undef_ is returned and _$@_ is set.
+
+**Example:**
+```
+my $ter = KoL::Terrarium->new('session' => $sess);
+```
+
+### update() ###
+If no information is cached or the last time it was cached was before the [KoL->dirty()](PerlKoL#dirty().md) time, this method requests 'familiar.php' and gathers information from it.
+
+The result is 1|0 based on success or failure. In the event of a failure, _$@_ is set to a meaningful value.
+
+**Example:**
+
+```
+$ter->update();
+```
+
+### availableEquipment() ###
+Returns an array reference of familiar equipment that is currently not being used by a familiar.
+
+In the event of an error, _undef_ is returned and _$@_ is set with an error message.
+
+**Example:**
+
+```
+my $equip = $ter->availableEquipment();
+if (!$equip) {
+    print "Unable to get available equipment: $@\n";
+    exit(1);
+}
+print "You have " . (0 + @{$equip}) . " unused familiar equipment items.\n";
+```
+
+### currentFamiliar() ###
+Returns the [KoL::Familiar](PerlKoLFamiliar.md) instance for the current familiar in use.
+
+If no familiar is in use, _undef_ will be returned. An _undef_ result is also returned in the event of an error in which case _$@_ is also set with the error message.
+
+**Example:**
+
+```
+my $curr = $ter->currentFamiliar();
+if ($@) {
+    print "Unable to retrieve current familiar: $@\n";
+    exit(1);
+}
+```
+
+### allFamiliars() ###
+Returns an array reference of [KoL::Familiar](PerlKoLFamiliar.md) instances for all of the familiars that the character has.
+
+If the character has no familiars, an empty array reference is returned.
+
+In the event of an error, _undef_ is returned and _$@_ is set.
+
+**Example:**
+
+```
+my $fams = $ter->allFamiliars();
+if (!$fams) {
+    print "Unable to retrieve all familiars: $@\n";
+    exit(1);
+}
+```
+
+### changeName($fam, $name) ###
+Changes the name of the supplied _$fam_ familiar to _$name_.
+
+_$fam_ is a [KoL::Familiar](PerlKoLFamiliar.md) instance as returned by _currentFamiliar()_ or _allFamiliars()_.
+
+Returns 1 on success and 0 for an error. In the event of an error, _$@_ is set.
+
+You may also perform this action by calling [changeName()](PerlKoLFamiliar#changeName($name).md) on a familiar instance. This method processes the request if you change the name via the familiar's object instance.
+
+**Example:**
+```
+if (!$ter->changeName($fams->[0], $fams->[0]{'name'} . " Now with more Lemon!")) {
+    print "Unable to change familiar name: $@\n";
+    exit(1);
+}
+```
+
+### unequip($fam) ###
+If the familiar identified by _$fam_ currently has an item equipped, the item is unequipped.
+
+_$fam_ is a [KoL::Familiar](PerlKoLFamiliar.md) instance as returned by _currentFamiliar()_ or _allFamiliars()_.
+
+Returns 0 on failure and sets _$@_ to an error message.
+
+This is the method that is called if you call [unequip()](PerlKolFamiliar#unequip().md) on a familiar instance.
+
+**Example:**
+
+```
+if (!$ter->unequip($fams->[0])) {
+    print "Unable to unequip familiar: $@\n";
+    exit(1);
+}
+```
+
+### equip($fam, $item) ###
+Attempts to equip the given _$item_ to the familiar identified by _$fam_.
+
+_$fam_ is a [KoL::Familiar](PerlKoLFamiliar.md) instance as returned by _currentFamiliar()_ or _allFamiliars()_.
+
+_$item_ is a familiar equipment hash reference as returned by _availableEquipment()_.
+
+On error, 0 is returned and _$@_ is set to an error message.
+
+**Example:**
+
+```
+if (!$ter->equip($curr, $equip->[3])) {
+    print "Unable to equip familiar: $@\n";
+    exit(1);
+}
+```
+
+### lock() ###
+### unlock() ###
+Attempts to (un)lock the equipment equipped to the current familiar.
+
+Returns 0 and sets _$@_ in the event it is unable to do so.
+
+**Examples:**
+
+```
+if (!$ter->lock()) {
+    print "Unable to lock current equipment: $@\n";
+}
+```
+
+```
+if (!$ter->unlock()) {
+    print "Unable to unlock current equipment: $@\n";
+}
+```
+
+### takeThisOne($fam) ###
+Attempts to make the [KoL::Familiar](PerlKolFamiliar.md) instance _$fam_ your current familiar.
+
+Returns 1 on success and 0 on failure. In the event of an error, $@ is set with an error message.
+
+**Example:**
+```
+if (!$ter->takeThisOne($fam)) {
+    print "Unable to take familiar from the Terrarium: $@\n";
+}
+```
+
+### putAway() ###
+Attempts to return the current familiar to the Terrarium.
+
+Returns 1 on success and 0 on failure. In the event of an error, $@ is set with an error message.
+
+**Example:**
+```
+if (!$ter->putAway()) {
+    print "Unable to drop current familiar like a bad habit: $@\n";
+}
+```

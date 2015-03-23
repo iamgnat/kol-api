@@ -1,0 +1,1 @@
+The purpose of this page is simply a jumping off point for the API's Perl documentation.

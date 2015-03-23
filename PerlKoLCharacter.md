@@ -1,0 +1,44 @@
+**WARNING:**
+
+This module is currently under active development. This means that:
+
+  1. The API is not complete and functionality is being added and changed as it is developed.
+  1. The documentation is likely not up to date with the code.
+
+Using any functionality of this module at this time is just silly and at your own risk.
+
+You've been warned!
+
+
+
+# Introduction #
+
+This module manages information about the character.
+
+## TODO ##
+
+Just consider this a temporary place holder and everything will potentially change.
+
+## Methods ##
+### new(%args) ###
+This is the constructor of the object and simply sets up the data storage.
+
+The [KoL::Session](PerlKoLSession.md) instance for the character you are working with is required in the _%args_ hash using the 'session' key.
+
+If there is an error, _undef_ is returned and _$@_ is set.
+
+**Example:**
+```
+my $char = KoL::Character->new('session' => $sess);
+```
+
+### update() ###
+If no information is cached or the last time it was cached was before the [KoL->dirty()](PerlKoL.md) time, this method requests 'charsheet.php' and gathers information from it.
+
+The result is 1|0 based on success or failure. In the event of a failure, _$@_ is set to a meaningful value.
+
+**Example:**
+
+```
+$char->update();
+```

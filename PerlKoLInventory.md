@@ -1,0 +1,144 @@
+
+
+# Introduction #
+
+This module manages information about the character's inventory.
+
+## Methods ##
+### new(%args) ###
+This is the constructor of the object and simply sets up the data storage.
+
+The [KoL::Session](PerlKoLSession.md) instance for the character you are working with is required in the _%args_ hash using the 'session' key.
+
+If there is an error, _undef_ is returned and _$@_ is set.
+
+**Example:**
+```
+my $inv = KoL::Inventory->new('session' => $sess);
+```
+
+### allItems() ###
+Returns a hash reference containing all the items in you inventory. The key to the hash is the name of the item. If no items are present in your inventory, an empty hash reference is returned.
+
+In the event of an error, _undef_ is returned and _$@_ is set.
+
+**Example:**
+```
+my $items = $inv->allItems();
+if ($@) {
+    print "Unable to get all items: $@\n";
+} else {
+    foreach my $name (sort(keys(%{$items}))) {
+        print "$name (" . $items->{$name}->count() . ")\n";
+    }
+}
+```
+
+### equipped() ###
+Returns a hash reference containing all the items that you currently have equipped. The key to the hash is the name of the item. If there are no equipped items, an empty hash reference is returned.
+
+In the event of an error, _undef_ is returned and _$@_ is set.
+
+**Example:**
+```
+my $equip = $inv->equipped();
+if ($@) {
+    print "Unable to get equipped items: $@\n";
+} else {
+    foreach my $name (sort(keys(%{$equip}))) {
+        print "$name (" . $equip->{$name}->count() . ")\n";
+    }
+}
+```
+
+### consumables() ###
+Returns a hash reference containing all the items from the 'consumables' tab of the character's inventory. The key to the hash is the name of the item. If no items are present in your inventory, an empty hash reference is returned.
+
+In the event of an error, _undef_ is returned and _$@_ is set.
+
+**Example:**
+```
+my $cons = $inv->consumables();
+if ($@) {
+    print "Unable to get consumable items: $@\n";
+} else {
+    foreach my $name (sort(keys(%{$cons}))) {
+        print "$name (" . $cons->{$name}->count() . ")\n";
+    }
+}
+```
+
+### equipment() ###
+Returns a hash reference containing all the items from the 'equipment' tab of the character's inventory. The key to the hash is the name of the item. If no items are present in your inventory, an empty hash reference is returned.
+
+In the event of an error, _undef_ is returned and _$@_ is set.
+
+**Example:**
+```
+my $eq = $inv->equipment();
+if ($@) {
+    print "Unable to get equipment items: $@\n";
+} else {
+    foreach my $name (sort(keys(%{$eq}))) {
+        print "$name (" . $eq->{$name}->count() . ")\n";
+    }
+}
+```
+
+### misc() ###
+Returns a hash reference containing all the items from the 'misc' tab of the character's inventory. The key to the hash is the name of the item. If no items are present in your inventory, an empty hash reference is returned.
+
+In the event of an error, _undef_ is returned and _$@_ is set.
+
+**Example:**
+```
+my $misc = $inv->misc();
+if ($@) {
+    print "Unable to get misc items: $@\n";
+} else {
+    foreach my $name (sort(keys(%{$misc}))) {
+        print "$name (" . $misc->{$name}->count() . ")\n";
+    }
+}
+```
+
+### accessories() ###
+### booze() ###
+### combatItems() ###
+### food() ###
+### hats() ###
+### offHandItems() ###
+### pants() ###
+### potions() ###
+### shirts() ###
+### weapons() ###
+Returns a hash reference of the appropriate items. If there are no matching items, an empty hash reference is returned. The key of the hash is the item name.
+
+If there is an error, _undef_ is returned and _$@_ is set to an error message.
+
+**Example:**
+```
+my $booze = $inv->booze();
+if ($@) {
+    print "Unable to get booze: $@\n";
+} else {
+    foreach my $name (sort(keys(%{$booze}))) {
+        print "$name (" . $booze->{$name}->count() . ")\n";
+    }
+}
+```
+
+### miscellaneous() ###
+This method functions the same as the others except that it returns items that don't fit in one of the other categories. The results consist of the Miscellaneous Consumables, Miscellaneous Items, and Quest Items that don't fall anywhere else.
+
+**Example:**
+```
+my $misc = $inv->miscellaneous();
+if ($@) {
+    print "Unable to get miscellaneous items: $@\n";
+} else {
+    foreach my $name (sort(keys(%{$misc}))) {
+        print "$name (" . $misc->{$name}->count() . ")\n";
+    }
+}
+```

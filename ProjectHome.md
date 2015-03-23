@@ -1,0 +1,1 @@
+The purpose of this project is to provide a Perl API to write bots for [Kingdom of Loathing](http://www.kingdomofloathing.com).
