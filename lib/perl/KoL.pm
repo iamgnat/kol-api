@@ -1,5 +1,3 @@
-# $Id$
-
 # Copyright KoLAPI (http://kol-api.googlecode.com)
 
 # KoL.pm
